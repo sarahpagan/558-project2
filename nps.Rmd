@@ -1,0 +1,56 @@
+---
+title: "NPS API"
+author: "Sarah Pagan"
+date: "2023-10-01"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(httr)
+library(jsonlite)
+library(dplyr)
+
+myKey <- "oKmYKW6S1dOrI47ra4laE70chvKFy5WGV1c0Pjgo"
+```
+
+```{r}
+get_NPS_activities <- function(key, activities){
+  acts <- paste(activities, collapse = ",")
+  url <- paste0("https://developer.nps.gov/api/v1/activities/parks?api_key=",
+                key,
+                "&q=",
+                acts,
+                "&limit=100000")
+  
+  query <- GET(url)
+  results <- fromJSON(rawToChar(query$content))$data$parks
+  
+  activity <- c()
+  for (i in 1:length(activities)){
+    y <- rep(activities[i],
+             nrow(results[[i]]))
+    activity <- append(activity, y)
+  }
+  
+  results |>
+    bind_rows() |>
+    cbind(activity) |>
+    arrange(fullName) |>
+    select(fullName, activity, states)
+}
+```
+
+```{r}
+a <- GET(paste0("https://developer.nps.gov/api/v1/activities?api_key=", myKey))
+fromJSON(rawToChar(a$content))$data$name
+```
+
+```{r}
+get_NPS_activities(myKey, c("climbing", "swimming")) |>
+  group_by(fullName) |>
+  filter(n() > 1) |>
+  select(-activity) |>
+  distinct(fullName, states)
+```
