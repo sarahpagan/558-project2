@@ -1,4 +1,3 @@
-rmarkdown::render("test.rmd", output_file = "README.md")
-
+rmarkdown::render("nps.rmd", output_file = "README.md")
 
 

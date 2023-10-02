@@ -22,7 +22,7 @@ get_NPS_activities <- function(key, activities){
                 key,
                 "&q=",
                 acts,
-                "&limit=100000")
+                "&limit=1000")
   
   query <- GET(url)
   results <- fromJSON(rawToChar(query$content))$data$parks
@@ -54,3 +54,25 @@ get_NPS_activities(myKey, c("climbing", "swimming")) |>
   select(-activity) |>
   distinct(fullName, states)
 ```
+
+```{r}
+get_NPS_parks <- function(key){
+url <- paste0("https://developer.nps.gov/api/v1/parks?api_key=",
+              key,
+              "&limit=1000")
+
+query <- GET(url)
+results <- fromJSON(rawToChar(query$content))$data
+return(results)
+}
+
+get_NPS_parks(myKey)
+
+```
+
+```{r}
+p <- "https://developer.nps.gov/api/v1/campgrounds?api_key=oKmYKW6S1dOrI47ra4laE70chvKFy5WGV1c0Pjgo&limit=1000"
+
+fromJSON(rawToChar(GET(p)$content))$data$amenities
+```
+
