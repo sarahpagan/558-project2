@@ -56,23 +56,55 @@ get_NPS_activities(myKey, c("climbing", "swimming")) |>
 ```
 
 ```{r}
-get_NPS_parks <- function(key){
-url <- paste0("https://developer.nps.gov/api/v1/parks?api_key=",
-              key,
-              "&limit=1000")
+get_NPS_parks <- function(key, states = NULL){
+  if(is.null(states)){
+    url <- paste0("https://developer.nps.gov/api/v1/parks?api_key=",
+                  key,
+                  "&limit=1000")
+  }
+  
+  if(!is.null(states)){
+    url <- paste0("https://developer.nps.gov/api/v1/parks?api_key=",
+                  key,
+                  "&stateCode=",
+                  paste(states, collapse = ","),
+                  "&limit=1000")
+  }
 
 query <- GET(url)
-results <- fromJSON(rawToChar(query$content))$data
-return(results)
+results <- fromJSON(rawToChar(query$content))
+
+results$data |>
+  select(fullName, parkCode, states, designation, latitude, longitude)
 }
 
-get_NPS_parks(myKey)
+NC <- get_NPS_parks(myKey, "NC")
 
 ```
 
 ```{r}
-p <- "https://developer.nps.gov/api/v1/campgrounds?api_key=oKmYKW6S1dOrI47ra4laE70chvKFy5WGV1c0Pjgo&limit=1000"
+## get_NPS_campgrounds <- function( ## "https://developer.nps.gov/api/v1/campgrounds?api_key=oKmYKW6S1dOrI47ra4laE70chvKFy5WGV1c0Pjgo&limit=1000"
 
-fromJSON(rawToChar(GET(p)$content))$data$amenities
+## fromJSON(rawToChar(GET(p)$content))$data$amenities
+```
+
+```{r}
+library(ggplot2)
+library(sf)
+
+NC <- NC |>
+  mutate(long = as.numeric(longitude), .keep = "unused") |>
+  mutate(lat = as.numeric(latitude), .keep = "unused") |>
+  filter(parkCode != "trte", parkCode != "appa")
+
+NC
+
+nc <- st_read(system.file("shape/nc.shp", package="sf"))
+ggplot(nc) +
+  geom_sf(color = "forestgreen", fill = "white") +
+  geom_point(data = NC, mapping = aes(x = long, y = lat)) +
+  ggrepel::geom_text_repel(data = NC, aes(x = long, y = lat, label = parkCode)) +
+  theme(panel.background = element_blank())
+
 ```
 
