@@ -1,7 +1,17 @@
-NPS API
+NPS API Vignette
 ================
-Sarah Pagan
-2023-10-01
+
+- [Overview](#overview)
+- [Requirements](#requirements)
+
+# Overview
+
+<figure>
+<img src="parks.png" alt="parks" />
+<figcaption aria-hidden="true">parks</figcaption>
+</figure>
+
+# Requirements
 
 ``` r
 get_NPS_activities <- function(key, activities){
@@ -10,7 +20,7 @@ get_NPS_activities <- function(key, activities){
                 key,
                 "&q=",
                 acts,
-                "&limit=100000")
+                "&limit=10000")
   
   query <- GET(url)
   results <- fromJSON(rawToChar(query$content))$data$parks
@@ -22,11 +32,12 @@ get_NPS_activities <- function(key, activities){
     activity <- append(activity, y)
   }
   
-  results |>
+  results <- results |>
     bind_rows() |>
     cbind(activity) |>
-    arrange(fullName) |>
     select(fullName, activity, states)
+  
+  return(results)
 }
 ```
 
@@ -77,3 +88,100 @@ get_NPS_activities(myKey, c("climbing", "swimming")) |>
     ## 7 Olympic National Park                           WA    
     ## 8 Pictured Rocks National Lakeshore               MI    
     ## 9 Yosemite National Park                          CA
+
+``` r
+get_NPS_parks <- function(key, states = NULL){
+  if(is.null(states)){
+    url <- paste0("https://developer.nps.gov/api/v1/parks?api_key=",
+                  key,
+                  "&limit=10000")
+  }
+  
+  if(!is.null(states)){
+    url <- paste0("https://developer.nps.gov/api/v1/parks?api_key=",
+                  key,
+                  "&stateCode=",
+                  paste(states, collapse = ","),
+                  "&limit=10000")
+  }
+
+query <- GET(url)
+results <- fromJSON(rawToChar(query$content))$data
+
+return(results)
+}
+```
+
+``` r
+get_NPS_codes <- function(key) {
+  url <- paste0("https://developer.nps.gov/api/v1/parks?api_key=",
+                  key,
+                  "&limit=10000")
+  query <- GET(url)
+  results <- fromJSON(rawToChar(query$content))$data
+  results |>
+    select(fullName, parkCode, states)
+}
+
+get_NPS_campgrounds <- function(key, park_code = NULL){
+  parks <- get_NPS_codes(key)
+  
+  if(is.null(park_code)){
+    url <- paste0("https://developer.nps.gov/api/v1/campgrounds?api_key=",
+                  key,
+                  "&limit=10000")
+  }
+  
+  if(!is.null(park_code)){
+    url <- paste0("https://developer.nps.gov/api/v1/campgrounds?api_key=",
+                  key,
+                  "&parkCode=",
+                  park_code,
+                  "&limit=10000")
+  }
+  
+  query <- GET(url)
+  camps <- fromJSON(rawToChar(query$content))$data |>
+    select(name, parkCode) |>
+    left_join(parks)
+  results <- cbind(camps, fromJSON(rawToChar(GET(url)$content))$data$amenities)
+  
+  return(results)
+}
+```
+
+``` r
+library(ggplot2)
+library(sf)
+
+NC <- get_NPS_parks(myKey, "NC")
+
+NC <- NC |>
+  mutate(long = as.numeric(longitude), .keep = "unused") |>
+  mutate(lat = as.numeric(latitude), .keep = "unused") |>
+  filter(parkCode != "trte", parkCode != "appa")
+
+nc <- st_read(system.file("shape/nc.shp", package="sf"))
+```
+
+    ## Reading layer `nc' from data source 
+    ##   `/Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/library/sf/shape/nc.shp' 
+    ##   using driver `ESRI Shapefile'
+    ## Simple feature collection with 100 features and 14 fields
+    ## Geometry type: MULTIPOLYGON
+    ## Dimension:     XY
+    ## Bounding box:  xmin: -84.32385 ymin: 33.88199 xmax: -75.45698 ymax: 36.58965
+    ## Geodetic CRS:  NAD27
+
+``` r
+ggplot(nc) +
+  geom_sf(color = "darkgreen", fill = "white", size = 10) +
+  geom_point(data = NC, mapping = aes(x = long, y = lat)) +
+  ggrepel::geom_text_repel(data = NC, aes(x = long, y = lat, label = parkCode)) +
+  theme_void() +
+  labs(title = "Parks in North Carolina") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  xlab(NULL) + ylab(NULL)
+```
+
+![](README_files/figure-gfm/unnamed-chunk-251-1.png)<!-- -->
