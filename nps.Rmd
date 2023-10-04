@@ -72,20 +72,50 @@ get_NPS_parks <- function(key, states = NULL){
   }
 
 query <- GET(url)
-results <- fromJSON(rawToChar(query$content))
+results <- fromJSON(rawToChar(query$content))$data
 
-results$data |>
+results |>
   select(fullName, parkCode, states, designation, latitude, longitude)
 }
 
 NC <- get_NPS_parks(myKey, "NC")
 
+NC
+
 ```
 
 ```{r}
-## get_NPS_campgrounds <- function( ## "https://developer.nps.gov/api/v1/campgrounds?api_key=oKmYKW6S1dOrI47ra4laE70chvKFy5WGV1c0Pjgo&limit=1000"
 
-## fromJSON(rawToChar(GET(p)$content))$data$amenities
+get_NPS_codes <- function(key) {
+  url <- paste0("https://developer.nps.gov/api/v1/parks?api_key=",
+                  key,
+                  "&limit=1000")
+  query <- GET(url)
+  results <- fromJSON(rawToChar(query$content))$data
+  results |>
+    select(fullName, parkCode, states)
+}
+
+get_NPS_campgrounds <- function(key, code)
+
+url <-  "https://developer.nps.gov/api/v1/campgrounds?api_key=oKmYKW6S1dOrI47ra4laE70chvKFy5WGV1c0Pjgo&limit=1000"
+
+url2 <- "https://developer.nps.gov/api/v1/parks?api_key=oKmYKW6S1dOrI47ra4laE70chvKFy5WGV1c0Pjgo&limit=1000"
+
+park_names <- fromJSON(rawToChar(GET(url2)$content))$data |>
+  select(fullName, parkCode)
+
+parks <- fromJSON(rawToChar(GET(url)$content))$data |>
+  select(name, parkCode) |>
+  left_join(park_names)
+
+parks
+
+results <- cbind(parks, fromJSON(rawToChar(GET(url)$content))$data$amenities)
+
+results
+
+
 ```
 
 ```{r}
@@ -101,10 +131,13 @@ NC
 
 nc <- st_read(system.file("shape/nc.shp", package="sf"))
 ggplot(nc) +
-  geom_sf(color = "forestgreen", fill = "white") +
+  geom_sf(color = "darkgreen", fill = "white", size = 10) +
   geom_point(data = NC, mapping = aes(x = long, y = lat)) +
   ggrepel::geom_text_repel(data = NC, aes(x = long, y = lat, label = parkCode)) +
-  theme(panel.background = element_blank())
+  theme_minimal() +
+  labs(title = "Parks in North Carolina") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  xlab(NULL) + ylab(NULL)
 
 ```
 
