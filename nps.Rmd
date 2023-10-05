@@ -168,16 +168,18 @@ get_NPS_campgrounds <- function(key, park_codes = NULL){
 ```
 
 
+# Exploratory Data Analysis ![ ](bear.jpg)
+
 ```{r}
 NC <- get_NPS_parks(myKey, "NC") |>
   filter(parkCode != "trte", parkCode != "appa")
 
 NC_map <- st_read(system.file("shape/nc.shp", package="sf"))
 ggplot(NC_map) +
-  geom_sf(color = "darkgreen", fill = "white", size = 10) +
+  geom_sf(color = "seagreen3", fill = "honeydew", linewidth = 0.3) +
   geom_point(data = NC, mapping = aes(x = longitude,
                                       y = latitude),
-             color = "brown4",
+             color = "grey20",
              shape = 17,
              size = 3) +
   ggrepel::geom_text_repel(data = NC, aes(x = longitude,

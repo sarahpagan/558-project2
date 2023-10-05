@@ -6,6 +6,7 @@ NPS API Vignette
   - [get_NPS_parks](#get_nps_parks)
   - [get_NPS_activities](#get_nps_activities)
   - [get_NPS_campgrounds](#get_nps_campgrounds)
+- [Exploratory Data Analysis ![](bear.jpg)](#exploratory-data-analysis-)
 
 This document demonstrates how to retrieve data from the National Parks
 Service (NPS)
@@ -218,6 +219,8 @@ get_NPS_campgrounds <- function(key, park_codes = NULL){
 }
 ```
 
+# Exploratory Data Analysis ![](bear.jpg)
+
 ``` r
 NC <- get_NPS_parks(myKey, "NC") |>
   filter(parkCode != "trte", parkCode != "appa")
@@ -236,10 +239,10 @@ NC_map <- st_read(system.file("shape/nc.shp", package="sf"))
 
 ``` r
 ggplot(NC_map) +
-  geom_sf(color = "darkgreen", fill = "white", size = 10) +
+  geom_sf(color = "seagreen3", fill = "honeydew", linewidth = 0.3) +
   geom_point(data = NC, mapping = aes(x = longitude,
                                       y = latitude),
-             color = "brown4",
+             color = "grey20",
              shape = 17,
              size = 3) +
   ggrepel::geom_text_repel(data = NC, aes(x = longitude,
@@ -251,4 +254,4 @@ ggplot(NC_map) +
   theme(plot.title = element_text(hjust = 0.5, size = 20))
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-125-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-37-1.png)<!-- -->
