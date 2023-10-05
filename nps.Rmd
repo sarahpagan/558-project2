@@ -8,18 +8,19 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, message = FALSE)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 
 library(httr)
 library(jsonlite)
 library(dplyr)
+library(tidyr)
 library(ggplot2)
 library(sf)
 
 my_key <- "oKmYKW6S1dOrI47ra4laE70chvKFy5WGV1c0Pjgo"
 ```
 
-This document demonstrates how to retrieve data from the National Parks Service (NPS) [API](https://www.nps.gov/subjects/developer/api-documentation.htm). The NPS API provides access to data about NPS sites and their activities, campgrounds, events, photos, and more. In this vignette I build functions to interact with and pull data from the API's endpoints.
+This document demonstrates how to retrieve data from the National Parks Service (NPS) [API](https://www.nps.gov/subjects/developer/api-documentation.htm). The NPS API provides access to data about NPS sites and their activities, campgrounds, events, photos, and more. In this vignette, I build functions to interact with and pull data from the API's endpoints. I then use the functions to perform some exploratory data analysis.
 
 ![ ](parks.png)
 
@@ -58,6 +59,7 @@ results <- fromJSON(rawToChar(query$content))$data |>
 return(results)
 }
 ```
+
 
 ## get_NPS_activities
 
@@ -98,18 +100,11 @@ These are the categories of activities defined by NPS:
 
 ```{r}
 get_activities <- GET(paste0("https://developer.nps.gov/api/v1/activities?api_key=",
-                             myKey))
+                             my_key))
 NPS_activities <- fromJSON(rawToChar(get_activities$content))$data$name
 NPS_activities
 ```
 
-```{r}
-get_NPS_activities(myKey, c("Climbing", "Swimming")) |>
-  group_by(fullName) |>
-  filter(n() > 1) |>
-  select(-activity) |>
-  distinct(fullName, states)
-```
 
 ## get_NPS_campgrounds
 
@@ -131,13 +126,13 @@ get_NPS_codes <- function(key) {
 Here, I look up the `parkCode` for each of my parks of interest -- the Smoky Mountains and the New River Gorge.
 
 ```{r}
-all_codes <- get_NPS_codes(myKey) 
+all_codes <- get_NPS_codes(my_key) 
 my_codes <- all_codes |>
   filter(grepl("Joshua Tree|New River", all_codes$fullName))
 my_codes
 ```
 
-Now for the get_NPS_campgrounds function, the required input is `key` and the optional input is `park_codes`, a character vector of park codes (e.g. c("jotr", "neri")).
+Now for the `get_NPS_campgrounds` function, the required input is `key` and the optional input is `park_codes`, a character vector of park codes (e.g. c("jotr", "neri")).
 
 ```{r}
 get_NPS_campgrounds <- function(key, park_codes = NULL){
@@ -168,10 +163,42 @@ get_NPS_campgrounds <- function(key, park_codes = NULL){
 ```
 
 
-# Exploratory Data Analysis ![ ](bear.jpg)
+```{r}
+get_NPS_fees <- function(key, park_codes){
+  url <- paste0("https://developer.nps.gov/api/v1/feespasses?api_key=",
+                key,
+                "&parkCode=",
+                paste(park_codes, collapse = ","),
+                "&limit=10000")
+  query <- GET(url)
+  fromJSON(rawToChar(query$content))$data$fees
+}
+```
+
+# Exploratory Data Analysis
+
+![ ](bear.jpg)
+
+## NPS Sites in North Carolina
+
+First, let's pull data on all NPS sites in North Carolina using the `get_NPS_parks` function.
 
 ```{r}
-NC <- get_NPS_parks(myKey, "NC") |>
+NC_parks <- get_NPS_parks(my_key, "NC")
+NC_parks
+```
+### What types (designations) of NPS sites are present in North Carolina?
+
+```{r}
+NC_parks |>
+  group_by(designation) |>
+  summarise(count = n()) |>
+  arrange(desc(count))
+```
+
+
+```{r}
+NC <- NC_parks |>
   filter(parkCode != "trte", parkCode != "appa")
 
 NC_map <- st_read(system.file("shape/nc.shp", package="sf"))
@@ -190,4 +217,94 @@ ggplot(NC_map) +
   labs(title = "NPS Sites in North Carolina") +
   theme(plot.title = element_text(hjust = 0.5, size = 20))
 ```
+
+```{r}
+all_parks <- get_NPS_parks(my_key)
+all_des <- all_parks |>
+  group_by(designation) |>
+  filter(!designation == "") |>
+  summarise(count = n()) |>
+  arrange(desc(count))
+all_des
+```
+```{r}
+all_des_5 <- all_des |>
+  slice(1:5)
+
+ggplot(data = all_des_5, aes(x = reorder(designation, -count))) +
+         geom_col(aes(y = count), color = "seagreen1", linewidth = 2, fill = "seagreen4") +
+  xlab(NULL) +
+  ylab("count") +
+  labs(title = "NPS Sites by Designation: Top 5")
+```
+
+
+## NPS Sites with Climbing and Swimming
+
+Next, let's use the `get_NPS_activities` function to pull data on all parks with "Climbing" and/or "Swimming" recorded as possible activities.
+
+```{r}
+climb_swim <- get_NPS_activities(my_key, c("Climbing", "Swimming"))
+climb_swim
+```
+
+```{r}
+climb_swim |>
+  group_by(activity) |>
+  summarise(count = n())
+```
+
+```{r}
+climb_swim_states <- climb_swim |>
+  separate_rows(states, sep = ",")
+
+ggplot(data = climb_swim_states, aes(x = states)) + 
+  geom_bar(aes(fill = activity)) +
+  scale_fill_manual(values = c("grey30", "turquoise3")) +
+  theme(axis.text.x = element_text(angle = 90)) +
+  ylab("count of NPS sites") +
+  xlab("state") +
+  labs(title = "NPS Sites with Climbing and/or Swimming by State")
+```
+
+```{r}
+climb_and_swim <- climb_swim |>
+  group_by(fullName) |>
+  filter(n() > 1) |>
+  select(-activity) |>
+  distinct(fullName, states)
+
+climb_and_swim
+```
+ 
+##  Campgrounds in neri and jotr
+
+```{r}
+get_NPS_campgrounds(my_key, c("neri", "jotr"))
+```
+
+```{r}
+all_codes <- as.vector(get_NPS_codes(my_key)$parkCode)
+fees <- bind_rows(get_NPS_fees(my_key, all_codes)) |>
+  select(entranceFeeType, cost) |>
+  mutate(cost = as.numeric(cost)) |>
+  filter(entranceFeeType == "Entrance - Private Vehicle"|
+         entranceFeeType == "Entrance - Motorcycle"|
+         entranceFeeType == "Entrance - Per Person")
+```
+
+```{r}
+fees |>
+  group_by(entranceFeeType) |>
+  summarise(averageCost= mean(cost))
+```
+
+```{r}
+ggplot(data = fees, aes(x = entranceFeeType, y = cost)) +
+  geom_boxplot(aes(fill = entranceFeeType)) +
+  xlab(NULL) +
+  theme(axis.text.x = element_blank()) +
+  scale_fill_manual(values = c("turquoise4", "seagreen3", "turquoise2"))
+```
+
 
