@@ -156,7 +156,8 @@ get_NPS_campgrounds <- function(key, park_codes = NULL){
   camps <- fromJSON(rawToChar(query$content))$data |>
     select(name, parkCode) |>
     left_join(parks)
-  results <- cbind(camps, fromJSON(rawToChar(GET(url)$content))$data$amenities)
+  results <- cbind(camps, fromJSON(rawToChar(GET(url)$content))$data$amenities)|>
+    as_tibble()
   
   return(results)
 }
@@ -171,7 +172,7 @@ get_NPS_fees <- function(key, park_codes){
                 paste(park_codes, collapse = ","),
                 "&limit=10000")
   query <- GET(url)
-  fromJSON(rawToChar(query$content))$data$fees
+  as_tibble(fromJSON(rawToChar(query$content))$data$fees)
 }
 ```
 
@@ -260,7 +261,7 @@ climb_swim_states <- climb_swim |>
 
 ggplot(data = climb_swim_states, aes(x = states)) + 
   geom_bar(aes(fill = activity)) +
-  scale_fill_manual(values = c("grey30", "turquoise3")) +
+  scale_fill_manual(values = c("grey10", "turquoise3")) +
   theme(axis.text.x = element_text(angle = 90)) +
   ylab("count of NPS sites") +
   xlab("state") +
@@ -277,10 +278,37 @@ climb_and_swim <- climb_swim |>
 climb_and_swim
 ```
  
-##  Campgrounds in neri and jotr
+##  Campgrounds Amenities at grsm
 
 ```{r}
-get_NPS_campgrounds(my_key, c("neri", "jotr"))
+my_camps <- get_NPS_campgrounds(my_key, "grsm")
+my_camps
+```
+
+```{r}
+my_camps_heat <- my_camps |>
+  slice(1:12) |>
+  select(name, cellPhoneReception, potableWater, toilets, trashRecyclingCollection, campStore, foodStorageLockers, firewoodForSale) |>
+  mutate(potableWater = unlist(potableWater)) |>
+  mutate(toilets = unlist(toilets)) |>
+  pivot_longer(!name, names_to = "var", values_to = "value") |>
+  mutate(value = recode(value, 
+                        "No" = "0",
+                        "No water" = "0",
+                        "Yes - year round" = "1",
+                        "Yes - seasonal" = "0.5",
+                        "Flush Toilets - year round" = "1",
+                        "Flush Toilets - seasonal" = "0.5")) |>
+  mutate(value = as.numeric(value))
+
+ggplot(my_camps_heat, aes(x = name, y = var, fill = value)) +
+  geom_tile() +
+  scale_fill_gradient(low = "grey1", high = "turquoise1", name = "") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  xlab(NULL) + ylab(NULL) +
+  labs(title = "Campground Amenities:
+Great Smoky Mountains National Park")
+  
 ```
 
 ```{r}
