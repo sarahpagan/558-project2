@@ -10,7 +10,7 @@ NPS API Vignette
   - [NPS Sites in North Carolina](#nps-sites-in-north-carolina)
   - [NPS Sites with Climbing and
     Swimming](#nps-sites-with-climbing-and-swimming)
-  - [Campgrounds in neri and jotr](#campgrounds-in-neri-and-jotr)
+  - [Campgrounds Amenities at grsm](#campgrounds-amenities-at-grsm)
 
 This document demonstrates how to retrieve data from the National Parks
 Service (NPS)
@@ -190,7 +190,8 @@ get_NPS_campgrounds <- function(key, park_codes = NULL){
   camps <- fromJSON(rawToChar(query$content))$data |>
     select(name, parkCode) |>
     left_join(parks)
-  results <- cbind(camps, fromJSON(rawToChar(GET(url)$content))$data$amenities)
+  results <- cbind(camps, fromJSON(rawToChar(GET(url)$content))$data$amenities)|>
+    as_tibble()
   
   return(results)
 }
@@ -294,7 +295,7 @@ ggplot(NC_map) +
   theme(plot.title = element_text(hjust = 0.5, size = 20))
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-219-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-20-1.png)<!-- -->
 
 ``` r
 all_parks <- get_NPS_parks(my_key)
@@ -332,7 +333,7 @@ ggplot(data = all_des_5, aes(x = reorder(designation, -count))) +
   labs(title = "NPS Sites by Designation: Top 5")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-221-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-22-1.png)<!-- -->
 
 ## NPS Sites with Climbing and Swimming
 
@@ -377,14 +378,14 @@ climb_swim_states <- climb_swim |>
 
 ggplot(data = climb_swim_states, aes(x = states)) + 
   geom_bar(aes(fill = activity)) +
-  scale_fill_manual(values = c("grey30", "turquoise3")) +
+  scale_fill_manual(values = c("grey10", "turquoise3")) +
   theme(axis.text.x = element_text(angle = 90)) +
   ylab("count of NPS sites") +
   xlab("state") +
   labs(title = "NPS Sites with Climbing and/or Swimming by State")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-224-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-25-1.png)<!-- -->
 
 ``` r
 climb_and_swim <- climb_swim |>
@@ -410,111 +411,66 @@ climb_and_swim
     ## 8 Pictured Rocks National Lakeshore               MI    
     ## 9 Yosemite National Park                          CA
 
-## Campgrounds in neri and jotr
+## Campgrounds Amenities at grsm
 
 ``` r
-get_NPS_campgrounds(my_key, c("neri", "jotr"))
+my_camps <- get_NPS_campgrounds(my_key, "grsm")
+my_camps
 ```
 
-    ##                                    name parkCode                                 fullName
-    ## 1                             Army Camp     neri New River Gorge National Park & Preserve
-    ## 2                      Belle Campground     jotr                Joshua Tree National Park
-    ## 3                 Black Rock Campground     jotr                Joshua Tree National Park
-    ## 4                   Brooklyn Campground     neri New River Gorge National Park & Preserve
-    ## 5               Burnwood Group Campsite     neri New River Gorge National Park & Preserve
-    ## 6                 Cottonwood Campground     jotr                Joshua Tree National Park
-    ## 7                Glade Creek Campground     neri New River Gorge National Park & Preserve
-    ## 8                     Grandview Sandbar     neri New River Gorge National Park & Preserve
-    ## 9              Hidden Valley Campground     jotr                Joshua Tree National Park
-    ## 10               Indian Cove Campground     jotr                Joshua Tree National Park
-    ## 11               Jumbo Rocks Campground     jotr                Joshua Tree National Park
-    ## 12              Meadow Creek Campground     neri New River Gorge National Park & Preserve
-    ## 13                      Ryan Campground     jotr                Joshua Tree National Park
-    ## 14          Sheep Pass Group Campground     jotr                Joshua Tree National Park
-    ## 15                          Stone Cliff     neri New River Gorge National Park & Preserve
-    ## 16                    Thayer Campground     neri New River Gorge National Park & Preserve
-    ## 17 War Ridge/Backus Mountain Campground     neri New River Gorge National Park & Preserve
-    ## 18                White Tank Campground     jotr                Joshua Tree National Park
-    ##    states trashRecyclingCollection                         toilets internetConnectivity
-    ## 1      WV         Yes - year round Composting Toilets - year round                   No
-    ## 2      CA         Yes - year round      Vault Toilets - year round                   No
-    ## 3      CA         Yes - year round      Flush Toilets - year round     Yes - year round
-    ## 4      WV         Yes - year round   Portable Toilets - year round                   No
-    ## 5      WV         Yes - year round      Flush Toilets - year round                   No
-    ## 6      CA         Yes - year round      Flush Toilets - year round                   No
-    ## 7      WV         Yes - year round Composting Toilets - year round                   No
-    ## 8      WV         Yes - year round Composting Toilets - year round                   No
-    ## 9      CA         Yes - year round      Vault Toilets - year round                   No
-    ## 10     CA         Yes - year round      Vault Toilets - year round                   No
-    ## 11     CA         Yes - year round      Vault Toilets - year round                   No
-    ## 12     WV         Yes - year round Composting Toilets - year round                   No
-    ## 13     CA         Yes - year round      Vault Toilets - year round                   No
-    ## 14     CA         Yes - year round      Vault Toilets - year round                   No
-    ## 15     WV         Yes - year round Composting Toilets - year round                   No
-    ## 16     WV                       No                      No Toilets                   No
-    ## 17     WV                       No                      No Toilets                   No
-    ## 18     CA         Yes - year round      Vault Toilets - year round                   No
-    ##    showers cellPhoneReception laundry     amphitheater      dumpStation campStore
-    ## 1     None   Yes - year round      No               No               No        No
-    ## 2     None                 No      No               No               No        No
-    ## 3     None   Yes - year round      No Yes - year round Yes - year round        No
-    ## 4     None   Yes - year round      No               No               No        No
-    ## 5     None   Yes - year round      No               No               No        No
-    ## 6     None                 No      No Yes - year round Yes - year round        No
-    ## 7     None   Yes - year round      No               No               No        No
-    ## 8     None   Yes - year round      No               No               No        No
-    ## 9     None                 No      No               No               No        No
-    ## 10    None                 No      No Yes - year round               No        No
-    ## 11    None                 No      No Yes - year round               No        No
-    ## 12    None   Yes - year round      No               No               No        No
-    ## 13    None                 No      No               No               No        No
-    ## 14    None                 No      No               No               No        No
-    ## 15    None   Yes - year round      No               No               No        No
-    ## 16    None   Yes - year round      No               No               No        No
-    ## 17    None   Yes - year round      No               No               No        No
-    ## 18    None                 No      No               No               No        No
-    ##    staffOrVolunteerHostOnsite     potableWater iceAvailableForSale firewoodForSale
-    ## 1                          No         No water                  No              No
-    ## 2                          No         No water                  No              No
-    ## 3              Yes - seasonal Yes - year round                  No              No
-    ## 4                          No         No water                  No              No
-    ## 5                          No Yes - year round                  No              No
-    ## 6                          No Yes - year round                  No              No
-    ## 7                          No         No water                  No              No
-    ## 8                          No         No water                  No              No
-    ## 9                          No         No water                  No              No
-    ## 10             Yes - seasonal         No water                  No              No
-    ## 11                         No         No water                  No              No
-    ## 12                         No         No water                  No              No
-    ## 13                         No         No water                  No              No
-    ## 14                         No         No water                  No              No
-    ## 15                         No         No water                  No              No
-    ## 16                         No         No water                  No              No
-    ## 17                         No         No water                  No              No
-    ## 18                         No         No water                  No              No
-    ##    foodStorageLockers
-    ## 1                  No
-    ## 2                  No
-    ## 3                  No
-    ## 4                  No
-    ## 5                  No
-    ## 6                  No
-    ## 7                  No
-    ## 8                  No
-    ## 9                  No
-    ## 10                 No
-    ## 11                 No
-    ## 12                 No
-    ## 13                 No
-    ## 14                 No
-    ## 15                 No
-    ## 16                 No
-    ## 17                 No
-    ## 18                 No
+    ## # A tibble: 13 × 18
+    ##    name     parkC…¹ fullN…² states trash…³ toilets inter…⁴ showers cellP…⁵ laundry amphi…⁶
+    ##    <chr>    <chr>   <chr>   <chr>  <chr>   <list>  <chr>   <list>  <chr>   <chr>   <chr>  
+    ##  1 Abrams … grsm    Great … NC,TN  "Yes -… <chr>   "No"    <chr>   "No"    "No"    "No"   
+    ##  2 Balsam … grsm    Great … NC,TN  "Yes -… <chr>   "No"    <chr>   "No"    "No"    "Yes -…
+    ##  3 Big Cre… grsm    Great … NC,TN  "Yes -… <chr>   "No"    <chr>   "No"    "No"    "No"   
+    ##  4 Cades C… grsm    Great … NC,TN  "Yes -… <chr>   "No"    <chr>   "No"    "No"    "Yes -…
+    ##  5 Cades C… grsm    Great … NC,TN  "Yes -… <chr>   "No"    <chr>   "No"    "No"    "Yes -…
+    ##  6 Cataloo… grsm    Great … NC,TN  "Yes -… <chr>   "No"    <chr>   "No"    "No"    "No"   
+    ##  7 Cosby C… grsm    Great … NC,TN  "Yes -… <chr>   "No"    <chr>   "No"    "No"    "Yes -…
+    ##  8 Deep Cr… grsm    Great … NC,TN  "Yes -… <chr>   "No"    <chr>   "No"    "No"    "No"   
+    ##  9 Elkmont… grsm    Great … NC,TN  "Yes -… <chr>   "No"    <chr>   "No"    "No"    "Yes -…
+    ## 10 Elkmont… grsm    Great … NC,TN  "Yes -… <chr>   "No"    <chr>   "No"    "No"    "Yes -…
+    ## 11 Look Ro… grsm    Great … NC,TN  "Yes -… <chr>   "No"    <chr>   "No"    "No"    "No"   
+    ## 12 Smokemo… grsm    Great … NC,TN  "Yes -… <chr>   "No"    <chr>   "No"    "No"    "No"   
+    ## 13 Smokemo… grsm    Great … NC,TN  ""      <chr>   ""      <chr>   ""      ""      ""     
+    ## # … with 7 more variables: dumpStation <chr>, campStore <chr>,
+    ## #   staffOrVolunteerHostOnsite <chr>, potableWater <list>, iceAvailableForSale <chr>,
+    ## #   firewoodForSale <chr>, foodStorageLockers <chr>, and abbreviated variable names
+    ## #   ¹​parkCode, ²​fullName, ³​trashRecyclingCollection, ⁴​internetConnectivity,
+    ## #   ⁵​cellPhoneReception, ⁶​amphitheater
+
+``` r
+my_camps_heat <- my_camps |>
+  slice(1:12) |>
+  select(name, cellPhoneReception, potableWater, toilets, trashRecyclingCollection, campStore, foodStorageLockers, firewoodForSale) |>
+  mutate(potableWater = unlist(potableWater)) |>
+  mutate(toilets = unlist(toilets)) |>
+  pivot_longer(!name, names_to = "var", values_to = "value") |>
+  mutate(value = recode(value, 
+                        "No" = "0",
+                        "No water" = "0",
+                        "Yes - year round" = "1",
+                        "Yes - seasonal" = "0.5",
+                        "Flush Toilets - year round" = "1",
+                        "Flush Toilets - seasonal" = "0.5")) |>
+  mutate(value = as.numeric(value))
+
+ggplot(my_camps_heat, aes(x = name, y = var, fill = value)) +
+  geom_tile() +
+  scale_fill_gradient(low = "grey1", high = "turquoise1", name = "") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  xlab(NULL) + ylab(NULL) +
+  labs(title = "Campground Amenities:
+Great Smoky Mountains National Park")
+```
+
+![](README_files/figure-gfm/unnamed-chunk-28-1.png)<!-- -->
 
 ``` r
 all_codes <- as.vector(get_NPS_codes(my_key)$parkCode)
 fees <- bind_rows(get_NPS_fees(my_key, all_codes)) |>
+  as_tibble() |>
   select(entranceFeeType, cost) |>
   mutate(cost = as.numeric(cost)) |>
   filter(entranceFeeType == "Entrance - Private Vehicle"|
@@ -543,4 +499,4 @@ ggplot(data = fees, aes(x = entranceFeeType, y = cost)) +
   scale_fill_manual(values = c("turquoise4", "seagreen3", "turquoise2"))
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-229-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-31-1.png)<!-- -->

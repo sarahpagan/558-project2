@@ -172,8 +172,9 @@ get_NPS_fees <- function(key, park_codes){
                 paste(park_codes, collapse = ","),
                 "&limit=10000")
   query <- GET(url)
-  as_tibble(fromJSON(rawToChar(query$content))$data$fees)
+  fromJSON(rawToChar(query$content))$data$fees
 }
+
 ```
 
 # Exploratory Data Analysis
@@ -314,6 +315,7 @@ Great Smoky Mountains National Park")
 ```{r}
 all_codes <- as.vector(get_NPS_codes(my_key)$parkCode)
 fees <- bind_rows(get_NPS_fees(my_key, all_codes)) |>
+  as_tibble() |>
   select(entranceFeeType, cost) |>
   mutate(cost = as.numeric(cost)) |>
   filter(entranceFeeType == "Entrance - Private Vehicle"|
