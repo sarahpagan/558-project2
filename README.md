@@ -1,24 +1,26 @@
 NPS API Vignette
 ================
+Sarah Pagan
 
 - [Requirements](#requirements)
 - [API Interaction Functions](#api-interaction-functions)
   - [get_NPS_parks](#get_nps_parks)
   - [get_NPS_activities](#get_nps_activities)
   - [get_NPS_campgrounds](#get_nps_campgrounds)
+- [get_NPS_fees](#get_nps_fees)
 - [Exploratory Data Analysis](#exploratory-data-analysis)
-  - [NPS Sites in North Carolina](#nps-sites-in-north-carolina)
+  - [NPS Sites in NC](#nps-sites-in-nc)
   - [NPS Sites with Climbing and
     Swimming](#nps-sites-with-climbing-and-swimming)
-  - [Campgrounds Amenities at grsm](#campgrounds-amenities-at-grsm)
+  - [Campground Amenities at grsm](#campground-amenities-at-grsm)
 
 This document demonstrates how to retrieve data from the National Parks
 Service (NPS)
 [API](https://www.nps.gov/subjects/developer/api-documentation.htm). The
 NPS API provides access to data about NPS sites and their activities,
 campgrounds, events, photos, and more. In this vignette, I build
-functions to interact with and pull data from the API’s endpoints. I
-then use the functions to perform some exploratory data analysis.
+functions interacting with four of the API’s endpoints. I then use these
+functions to perform some exploratory data analysis.
 
 ![](parks.png)
 
@@ -113,27 +115,38 @@ NPS_activities <- fromJSON(rawToChar(get_activities$content))$data$name
 NPS_activities
 ```
 
-    ##  [1] "Arts and Culture"      "Astronomy"             "Auto and ATV"         
-    ##  [4] "Biking"                "Boating"               "Camping"              
-    ##  [7] "Canyoneering"          "Caving"                "Climbing"             
-    ## [10] "Compass and GPS"       "Dog Sledding"          "Fishing"              
-    ## [13] "Flying"                "Food"                  "Golfing"              
-    ## [16] "Guided Tours"          "Hands-On"              "Hiking"               
-    ## [19] "Horse Trekking"        "Hunting and Gathering" "Ice Skating"          
-    ## [22] "Junior Ranger Program" "Living History"        "Museum Exhibits"      
-    ## [25] "Paddling"              "Park Film"             "Playground"           
-    ## [28] "SCUBA Diving"          "Shopping"              "Skiing"               
-    ## [31] "Snorkeling"            "Snow Play"             "Snowmobiling"         
-    ## [34] "Snowshoeing"           "Surfing"               "Swimming"             
-    ## [37] "Team Sports"           "Tubing"                "Water Skiing"         
-    ## [40] "Wildlife Watching"
+    ##  [1] "Arts and Culture"      "Astronomy"            
+    ##  [3] "Auto and ATV"          "Biking"               
+    ##  [5] "Boating"               "Camping"              
+    ##  [7] "Canyoneering"          "Caving"               
+    ##  [9] "Climbing"              "Compass and GPS"      
+    ## [11] "Dog Sledding"          "Fishing"              
+    ## [13] "Flying"                "Food"                 
+    ## [15] "Golfing"               "Guided Tours"         
+    ## [17] "Hands-On"              "Hiking"               
+    ## [19] "Horse Trekking"        "Hunting and Gathering"
+    ## [21] "Ice Skating"           "Junior Ranger Program"
+    ## [23] "Living History"        "Museum Exhibits"      
+    ## [25] "Paddling"              "Park Film"            
+    ## [27] "Playground"            "SCUBA Diving"         
+    ## [29] "Shopping"              "Skiing"               
+    ## [31] "Snorkeling"            "Snow Play"            
+    ## [33] "Snowmobiling"          "Snowshoeing"          
+    ## [35] "Surfing"               "Swimming"             
+    ## [37] "Team Sports"           "Tubing"               
+    ## [39] "Water Skiing"          "Wildlife Watching"
 
 ## get_NPS_campgrounds
 
 This function interacts with the campgrounds endpoint to retrieve data
-about amenities at campgrounds in your park. The preceding function,
-`get_NPS_codes`, retrieves park codes for all sites. It can be used to
-look up a park code and is used in the main campgrounds function.
+about amenities at campgrounds in your park.
+
+The preceding function, `get_NPS_codes`, retrieves park codes for all
+sites. It can be used to look up the official code for your park and is
+used in the main campgrounds function to join park names by `parkCode`.
+
+Below, I look up the `parkCode` for each of my parks of interest –
+Joshua Tree and the New River Gorge.
 
 ``` r
 get_NPS_codes <- function(key) {
@@ -147,9 +160,6 @@ get_NPS_codes <- function(key) {
     as_tibble()
 }
 ```
-
-Here, I look up the `parkCode` for each of my parks of interest – the
-Smoky Mountains and the New River Gorge.
 
 ``` r
 all_codes <- get_NPS_codes(my_key) 
@@ -166,7 +176,7 @@ my_codes
 
 Now for the `get_NPS_campgrounds` function, the required input is `key`
 and the optional input is `park_codes`, a character vector of park codes
-(e.g. c(“jotr”, “neri”)).
+(e.g. `c("jotr", "neri")`).
 
 ``` r
 get_NPS_campgrounds <- function(key, park_codes = NULL){
@@ -197,6 +207,8 @@ get_NPS_campgrounds <- function(key, park_codes = NULL){
 }
 ```
 
+# get_NPS_fees
+
 ``` r
 get_NPS_fees <- function(key, park_codes){
   url <- paste0("https://developer.nps.gov/api/v1/feespasses?api_key=",
@@ -213,7 +225,7 @@ get_NPS_fees <- function(key, park_codes){
 
 ![](bear.jpg)
 
-## NPS Sites in North Carolina
+## NPS Sites in NC
 
 First, let’s pull data on all NPS sites in North Carolina using the
 `get_NPS_parks` function.
@@ -224,21 +236,22 @@ NC_parks
 ```
 
     ## # A tibble: 12 × 6
-    ##    fullName                                     parkCode states    desig…¹ latit…² longi…³
-    ##    <chr>                                        <chr>    <chr>     <chr>     <dbl>   <dbl>
-    ##  1 Appalachian National Scenic Trail            appa     CT,GA,MA… Nation…    40.4   -76.4
-    ##  2 Blue Ridge Parkway                           blri     NC,VA     Parkway    35.6   -82.5
-    ##  3 Cape Hatteras National Seashore              caha     NC        Nation…    35.4   -75.7
-    ##  4 Cape Lookout National Seashore               calo     NC        Nation…    34.8   -76.3
-    ##  5 Carl Sandburg Home National Historic Site    carl     NC        Nation…    35.3   -82.5
-    ##  6 Fort Raleigh National Historic Site          fora     NC        Nation…    35.9   -75.7
-    ##  7 Great Smoky Mountains National Park          grsm     NC,TN     Nation…    35.6   -83.5
-    ##  8 Guilford Courthouse National Military Park   guco     NC        Nation…    36.1   -79.8
-    ##  9 Moores Creek National Battlefield            mocr     NC        Nation…    34.5   -78.1
-    ## 10 Overmountain Victory National Historic Trail ovvi     NC,SC,TN… Nation…    35.1   -81.4
-    ## 11 Trail Of Tears National Historic Trail       trte     AL,AR,GA… Nation…    36.1   -89.7
-    ## 12 Wright Brothers National Memorial            wrbr     NC        Nation…    36.0   -75.7
-    ## # … with abbreviated variable names ¹​designation, ²​latitude, ³​longitude
+    ##    fullName                   parkC…¹ states desig…² latit…³ longi…⁴
+    ##    <chr>                      <chr>   <chr>  <chr>     <dbl>   <dbl>
+    ##  1 Appalachian National Scen… appa    CT,GA… Nation…    40.4   -76.4
+    ##  2 Blue Ridge Parkway         blri    NC,VA  Parkway    35.6   -82.5
+    ##  3 Cape Hatteras National Se… caha    NC     Nation…    35.4   -75.7
+    ##  4 Cape Lookout National Sea… calo    NC     Nation…    34.8   -76.3
+    ##  5 Carl Sandburg Home Nation… carl    NC     Nation…    35.3   -82.5
+    ##  6 Fort Raleigh National His… fora    NC     Nation…    35.9   -75.7
+    ##  7 Great Smoky Mountains Nat… grsm    NC,TN  Nation…    35.6   -83.5
+    ##  8 Guilford Courthouse Natio… guco    NC     Nation…    36.1   -79.8
+    ##  9 Moores Creek National Bat… mocr    NC     Nation…    34.5   -78.1
+    ## 10 Overmountain Victory Nati… ovvi    NC,SC… Nation…    35.1   -81.4
+    ## 11 Trail Of Tears National H… trte    AL,AR… Nation…    36.1   -89.7
+    ## 12 Wright Brothers National … wrbr    NC     Nation…    36.0   -75.7
+    ## # … with abbreviated variable names ¹​parkCode, ²​designation,
+    ## #   ³​latitude, ⁴​longitude
 
 ### What types (designations) of NPS sites are present in North Carolina?
 
@@ -295,7 +308,7 @@ ggplot(NC_map) +
   theme(plot.title = element_text(hjust = 0.5, size = 20))
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-20-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-25-1.png)<!-- -->
 
 ``` r
 all_parks <- get_NPS_parks(my_key)
@@ -333,7 +346,7 @@ ggplot(data = all_des_5, aes(x = reorder(designation, -count))) +
   labs(title = "NPS Sites by Designation: Top 5")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-22-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-27-1.png)<!-- -->
 
 ## NPS Sites with Climbing and Swimming
 
@@ -346,19 +359,20 @@ climb_swim
 ```
 
     ## # A tibble: 91 × 4
-    ##    fullName                                         parkCode states activity
-    ##    <chr>                                            <chr>    <chr>  <chr>   
-    ##  1 Acadia National Park                             acad     ME     Climbing
-    ##  2 Aniakchak National Monument & Preserve           ania     AK     Climbing
-    ##  3 Arches National Park                             arch     UT     Climbing
-    ##  4 Big South Fork National River & Recreation Area  biso     KY,TN  Climbing
-    ##  5 Black Canyon Of The Gunnison National Park       blca     CO     Climbing
-    ##  6 Canyonlands National Park                        cany     UT     Climbing
-    ##  7 Capitol Reef National Park                       care     UT     Climbing
-    ##  8 Catoctin Mountain Park                           cato     MD     Climbing
-    ##  9 Chickamauga & Chattanooga National Military Park chch     GA,TN  Climbing
-    ## 10 City Of Rocks National Reserve                   ciro     ID     Climbing
-    ## # … with 81 more rows
+    ##    fullName                                   parkC…¹ states activ…²
+    ##    <chr>                                      <chr>   <chr>  <chr>  
+    ##  1 Acadia National Park                       acad    ME     Climbi…
+    ##  2 Aniakchak National Monument & Preserve     ania    AK     Climbi…
+    ##  3 Arches National Park                       arch    UT     Climbi…
+    ##  4 Big South Fork National River & Recreatio… biso    KY,TN  Climbi…
+    ##  5 Black Canyon Of The Gunnison National Park blca    CO     Climbi…
+    ##  6 Canyonlands National Park                  cany    UT     Climbi…
+    ##  7 Capitol Reef National Park                 care    UT     Climbi…
+    ##  8 Catoctin Mountain Park                     cato    MD     Climbi…
+    ##  9 Chickamauga & Chattanooga National Milita… chch    GA,TN  Climbi…
+    ## 10 City Of Rocks National Reserve             ciro    ID     Climbi…
+    ## # … with 81 more rows, and abbreviated variable names ¹​parkCode,
+    ## #   ²​activity
 
 ``` r
 climb_swim |>
@@ -380,12 +394,11 @@ ggplot(data = climb_swim_states, aes(x = states)) +
   geom_bar(aes(fill = activity)) +
   scale_fill_manual(values = c("grey10", "turquoise3")) +
   theme(axis.text.x = element_text(angle = 90)) +
-  ylab("count of NPS sites") +
   xlab("state") +
   labs(title = "NPS Sites with Climbing and/or Swimming by State")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-25-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-30-1.png)<!-- -->
 
 ``` r
 climb_and_swim <- climb_swim |>
@@ -411,7 +424,7 @@ climb_and_swim
     ## 8 Pictured Rocks National Lakeshore               MI    
     ## 9 Yosemite National Park                          CA
 
-## Campgrounds Amenities at grsm
+## Campground Amenities at grsm
 
 ``` r
 my_camps <- get_NPS_campgrounds(my_key, "grsm")
@@ -419,31 +432,40 @@ my_camps
 ```
 
     ## # A tibble: 13 × 18
-    ##    name     parkC…¹ fullN…² states trash…³ toilets inter…⁴ showers cellP…⁵ laundry amphi…⁶
-    ##    <chr>    <chr>   <chr>   <chr>  <chr>   <list>  <chr>   <list>  <chr>   <chr>   <chr>  
-    ##  1 Abrams … grsm    Great … NC,TN  "Yes -… <chr>   "No"    <chr>   "No"    "No"    "No"   
-    ##  2 Balsam … grsm    Great … NC,TN  "Yes -… <chr>   "No"    <chr>   "No"    "No"    "Yes -…
-    ##  3 Big Cre… grsm    Great … NC,TN  "Yes -… <chr>   "No"    <chr>   "No"    "No"    "No"   
-    ##  4 Cades C… grsm    Great … NC,TN  "Yes -… <chr>   "No"    <chr>   "No"    "No"    "Yes -…
-    ##  5 Cades C… grsm    Great … NC,TN  "Yes -… <chr>   "No"    <chr>   "No"    "No"    "Yes -…
-    ##  6 Cataloo… grsm    Great … NC,TN  "Yes -… <chr>   "No"    <chr>   "No"    "No"    "No"   
-    ##  7 Cosby C… grsm    Great … NC,TN  "Yes -… <chr>   "No"    <chr>   "No"    "No"    "Yes -…
-    ##  8 Deep Cr… grsm    Great … NC,TN  "Yes -… <chr>   "No"    <chr>   "No"    "No"    "No"   
-    ##  9 Elkmont… grsm    Great … NC,TN  "Yes -… <chr>   "No"    <chr>   "No"    "No"    "Yes -…
-    ## 10 Elkmont… grsm    Great … NC,TN  "Yes -… <chr>   "No"    <chr>   "No"    "No"    "Yes -…
-    ## 11 Look Ro… grsm    Great … NC,TN  "Yes -… <chr>   "No"    <chr>   "No"    "No"    "No"   
-    ## 12 Smokemo… grsm    Great … NC,TN  "Yes -… <chr>   "No"    <chr>   "No"    "No"    "No"   
-    ## 13 Smokemo… grsm    Great … NC,TN  ""      <chr>   ""      <chr>   ""      ""      ""     
-    ## # … with 7 more variables: dumpStation <chr>, campStore <chr>,
-    ## #   staffOrVolunteerHostOnsite <chr>, potableWater <list>, iceAvailableForSale <chr>,
-    ## #   firewoodForSale <chr>, foodStorageLockers <chr>, and abbreviated variable names
-    ## #   ¹​parkCode, ²​fullName, ³​trashRecyclingCollection, ⁴​internetConnectivity,
-    ## #   ⁵​cellPhoneReception, ⁶​amphitheater
+    ##    name       parkC…¹ fullN…² states trash…³ toilets inter…⁴ showers
+    ##    <chr>      <chr>   <chr>   <chr>  <chr>   <list>  <chr>   <list> 
+    ##  1 Abrams Cr… grsm    Great … NC,TN  "Yes -… <chr>   "No"    <chr>  
+    ##  2 Balsam Mo… grsm    Great … NC,TN  "Yes -… <chr>   "No"    <chr>  
+    ##  3 Big Creek… grsm    Great … NC,TN  "Yes -… <chr>   "No"    <chr>  
+    ##  4 Cades Cov… grsm    Great … NC,TN  "Yes -… <chr>   "No"    <chr>  
+    ##  5 Cades Cov… grsm    Great … NC,TN  "Yes -… <chr>   "No"    <chr>  
+    ##  6 Catalooch… grsm    Great … NC,TN  "Yes -… <chr>   "No"    <chr>  
+    ##  7 Cosby Cam… grsm    Great … NC,TN  "Yes -… <chr>   "No"    <chr>  
+    ##  8 Deep Cree… grsm    Great … NC,TN  "Yes -… <chr>   "No"    <chr>  
+    ##  9 Elkmont C… grsm    Great … NC,TN  "Yes -… <chr>   "No"    <chr>  
+    ## 10 Elkmont G… grsm    Great … NC,TN  "Yes -… <chr>   "No"    <chr>  
+    ## 11 Look Rock… grsm    Great … NC,TN  "Yes -… <chr>   "No"    <chr>  
+    ## 12 Smokemont… grsm    Great … NC,TN  "Yes -… <chr>   "No"    <chr>  
+    ## 13 Smokemont… grsm    Great … NC,TN  ""      <chr>   ""      <chr>  
+    ## # … with 10 more variables: cellPhoneReception <chr>,
+    ## #   laundry <chr>, amphitheater <chr>, dumpStation <chr>,
+    ## #   campStore <chr>, staffOrVolunteerHostOnsite <chr>,
+    ## #   potableWater <list>, iceAvailableForSale <chr>,
+    ## #   firewoodForSale <chr>, foodStorageLockers <chr>, and
+    ## #   abbreviated variable names ¹​parkCode, ²​fullName,
+    ## #   ³​trashRecyclingCollection, ⁴​internetConnectivity
 
 ``` r
 my_camps_heat <- my_camps |>
   slice(1:12) |>
-  select(name, cellPhoneReception, potableWater, toilets, trashRecyclingCollection, campStore, foodStorageLockers, firewoodForSale) |>
+  select(name,
+         cellPhoneReception,
+         potableWater,
+         toilets,
+         trashRecyclingCollection,
+         campStore,
+         foodStorageLockers,
+         firewoodForSale) |>
   mutate(potableWater = unlist(potableWater)) |>
   mutate(toilets = unlist(toilets)) |>
   pivot_longer(!name, names_to = "var", values_to = "value") |>
@@ -465,7 +487,7 @@ ggplot(my_camps_heat, aes(x = name, y = var, fill = value)) +
 Great Smoky Mountains National Park")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-28-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-33-1.png)<!-- -->
 
 ``` r
 all_codes <- as.vector(get_NPS_codes(my_key)$parkCode)
@@ -496,7 +518,8 @@ ggplot(data = fees, aes(x = entranceFeeType, y = cost)) +
   geom_boxplot(aes(fill = entranceFeeType)) +
   xlab(NULL) +
   theme(axis.text.x = element_blank()) +
-  scale_fill_manual(values = c("turquoise4", "seagreen3", "turquoise2"))
+  scale_fill_manual(values = c("turquoise4", "seagreen3", "turquoise2"), name = "Fee Type") +
+  labs(title = "NPS Fees by Type of Entrance")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-31-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-36-1.png)<!-- -->

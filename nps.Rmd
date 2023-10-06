@@ -1,6 +1,7 @@
 ---
 title: "NPS API Vignette"
 subtitle: "Vignette for pulling data from the National Park Service API"
+author: "Sarah Pagan"
 output: 
   github_document:
     toc: TRUE
@@ -20,7 +21,7 @@ library(sf)
 my_key <- "oKmYKW6S1dOrI47ra4laE70chvKFy5WGV1c0Pjgo"
 ```
 
-This document demonstrates how to retrieve data from the National Parks Service (NPS) [API](https://www.nps.gov/subjects/developer/api-documentation.htm). The NPS API provides access to data about NPS sites and their activities, campgrounds, events, photos, and more. In this vignette, I build functions to interact with and pull data from the API's endpoints. I then use the functions to perform some exploratory data analysis.
+This document demonstrates how to retrieve data from the National Parks Service (NPS) [API](https://www.nps.gov/subjects/developer/api-documentation.htm). The NPS API provides access to data about NPS sites and their activities, campgrounds, events, photos, and more. In this vignette, I build functions interacting with four of the API's endpoints. I then use these functions to perform some exploratory data analysis.
 
 ![ ](parks.png)
 
@@ -108,7 +109,11 @@ NPS_activities
 
 ## get_NPS_campgrounds
 
-This function interacts with the campgrounds endpoint to retrieve data about amenities at campgrounds in your park. The preceding function, `get_NPS_codes`, retrieves park codes for all sites. It can be used to look up a park code and is used in the main campgrounds function.
+This function interacts with the campgrounds endpoint to retrieve data about amenities at campgrounds in your park.
+
+The preceding function, `get_NPS_codes`, retrieves park codes for all sites. It can be used to look up the official code for your park and is used in the main campgrounds function to join park names by `parkCode`. 
+
+Below, I look up the `parkCode` for each of my parks of interest -- Joshua Tree and the New River Gorge.
 
 ```{r}
 get_NPS_codes <- function(key) {
@@ -123,8 +128,6 @@ get_NPS_codes <- function(key) {
 }
 ```
 
-Here, I look up the `parkCode` for each of my parks of interest -- the Smoky Mountains and the New River Gorge.
-
 ```{r}
 all_codes <- get_NPS_codes(my_key) 
 my_codes <- all_codes |>
@@ -132,7 +135,7 @@ my_codes <- all_codes |>
 my_codes
 ```
 
-Now for the `get_NPS_campgrounds` function, the required input is `key` and the optional input is `park_codes`, a character vector of park codes (e.g. c("jotr", "neri")).
+Now for the `get_NPS_campgrounds` function, the required input is `key` and the optional input is `park_codes`, a character vector of park codes (e.g. `c("jotr", "neri")`).
 
 ```{r}
 get_NPS_campgrounds <- function(key, park_codes = NULL){
@@ -163,6 +166,7 @@ get_NPS_campgrounds <- function(key, park_codes = NULL){
 }
 ```
 
+# get_NPS_fees
 
 ```{r}
 get_NPS_fees <- function(key, park_codes){
@@ -181,7 +185,7 @@ get_NPS_fees <- function(key, park_codes){
 
 ![ ](bear.jpg)
 
-## NPS Sites in North Carolina
+## NPS Sites in NC
 
 First, let's pull data on all NPS sites in North Carolina using the `get_NPS_parks` function.
 
@@ -264,7 +268,6 @@ ggplot(data = climb_swim_states, aes(x = states)) +
   geom_bar(aes(fill = activity)) +
   scale_fill_manual(values = c("grey10", "turquoise3")) +
   theme(axis.text.x = element_text(angle = 90)) +
-  ylab("count of NPS sites") +
   xlab("state") +
   labs(title = "NPS Sites with Climbing and/or Swimming by State")
 ```
@@ -279,7 +282,7 @@ climb_and_swim <- climb_swim |>
 climb_and_swim
 ```
  
-##  Campgrounds Amenities at grsm
+##  Campground Amenities at grsm
 
 ```{r}
 my_camps <- get_NPS_campgrounds(my_key, "grsm")
@@ -289,7 +292,14 @@ my_camps
 ```{r}
 my_camps_heat <- my_camps |>
   slice(1:12) |>
-  select(name, cellPhoneReception, potableWater, toilets, trashRecyclingCollection, campStore, foodStorageLockers, firewoodForSale) |>
+  select(name,
+         cellPhoneReception,
+         potableWater,
+         toilets,
+         trashRecyclingCollection,
+         campStore,
+         foodStorageLockers,
+         firewoodForSale) |>
   mutate(potableWater = unlist(potableWater)) |>
   mutate(toilets = unlist(toilets)) |>
   pivot_longer(!name, names_to = "var", values_to = "value") |>
@@ -334,7 +344,8 @@ ggplot(data = fees, aes(x = entranceFeeType, y = cost)) +
   geom_boxplot(aes(fill = entranceFeeType)) +
   xlab(NULL) +
   theme(axis.text.x = element_blank()) +
-  scale_fill_manual(values = c("turquoise4", "seagreen3", "turquoise2"))
+  scale_fill_manual(values = c("turquoise4", "seagreen3", "turquoise2"), name = "Fee Type") +
+  labs(title = "NPS Fees by Type of Entrance")
 ```
 
 
