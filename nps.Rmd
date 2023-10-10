@@ -21,11 +21,11 @@ library(sf)
 my_key <- "oKmYKW6S1dOrI47ra4laE70chvKFy5WGV1c0Pjgo"
 ```
 
+![ ](parks2.jpg)
+
 # Overview
 
 This document demonstrates how to retrieve and summarize data from the United States National Parks Service (NPS) [API](https://www.nps.gov/subjects/developer/api-documentation.htm). The NPS API provides access to data about official NPS parks and their activities, campgrounds, events, photos, and more. In this vignette, I build functions to interact with four of the API's endpoints. I then use these functions to perform some exploratory data analysis.
-
-![ ](parks.png)
 
 # Requirements
 
@@ -33,7 +33,7 @@ To retrieve data from the NPS API you will need to sign up for a free API key at
 
 Additional, helpful documentation about the NPS API is located [here](https://www.nps.gov/subjects/developer/api-documentation.htm). 
 
-To develop the functions interacting with the NPS API, I used the following packages:
+To develop my API interaction functions, I used the following packages:
 
 `httr`
 
@@ -41,7 +41,7 @@ To develop the functions interacting with the NPS API, I used the following pack
 
 `dplyr`
 
-In addition to the packages above, I used the following packages to manipulate and visualize data:
+In addition, I used the following packages to manipulate and visualize data:
 
 `stringr`
 
@@ -264,8 +264,8 @@ ggplot(NC_map) +
                                           y = latitude,
                                           label = parkCode),
                            size = 5) +
-  theme_void() +
-  labs(title = "NPS parks in North Carolina") +
+  labs(title = "NPS Parks in North Carolina") +
+  xlab(NULL) + ylab(NULL) +
   theme(plot.title = element_text(hjust = 0.5, size = 20))
 ```
 ## National NPS Statistics

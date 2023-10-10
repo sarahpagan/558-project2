@@ -16,6 +16,8 @@ by Sarah Pagan
   - [Campground Amenities at grsm](#campground-amenities-at-grsm)
   - [Entrance Fees](#entrance-fees)
 
+![](parks2.jpg)
+
 # Overview
 
 This document demonstrates how to retrieve and summarize data from the
@@ -26,8 +28,6 @@ activities, campgrounds, events, photos, and more. In this vignette, I
 build functions to interact with four of the API’s endpoints. I then use
 these functions to perform some exploratory data analysis.
 
-![](parks.png)
-
 # Requirements
 
 To retrieve data from the NPS API you will need to sign up for a free
@@ -37,8 +37,7 @@ API](https://www.nps.gov/subjects/developer/get-started.htm) web page.
 Additional, helpful documentation about the NPS API is located
 [here](https://www.nps.gov/subjects/developer/api-documentation.htm).
 
-To develop the functions interacting with the NPS API, I used the
-following packages:
+To develop my API interaction functions, I used the following packages:
 
 `httr`
 
@@ -46,8 +45,8 @@ following packages:
 
 `dplyr`
 
-In addition to the packages above, I used the following packages to
-manipulate and visualize data:
+In addition, I used the following packages to manipulate and visualize
+data:
 
 `stringr`
 
@@ -345,12 +344,12 @@ ggplot(NC_map) +
                                           y = latitude,
                                           label = parkCode),
                            size = 5) +
-  theme_void() +
-  labs(title = "NPS parks in North Carolina") +
+  labs(title = "NPS Parks in North Carolina") +
+  xlab(NULL) + ylab(NULL) +
   theme(plot.title = element_text(hjust = 0.5, size = 20))
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-10-1.png)<!-- --> \## National
+![](README_files/figure-gfm/unnamed-chunk-12-1.png)<!-- --> \## National
 NPS Statistics
 
 Let’s use the `get_NPS_parks` function again to pull data on all NPS
@@ -422,7 +421,7 @@ ggplot(data = all_des_5, aes(x = reorder(designation, count))) +
   coord_flip()
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-13-1.png)<!-- --> \### Which
+![](README_files/figure-gfm/unnamed-chunk-15-1.png)<!-- --> \### Which
 states have the most National Monuments?
 
 The National Monument designation category has the most NPS units,
@@ -517,7 +516,7 @@ ggplot(data = climb_swim_states, aes(x = states)) +
   labs(title = "NPS parks with Climbing and/or Swimming by State")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
 
 ### Which NPS parks have BOTH climbing and swimming recorded as possible activities?
 
@@ -630,7 +629,7 @@ ggplot(my_camps_heat, aes(x = name, y = var, fill = value)) +
 Great Smoky Mountains National Park")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-21-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-23-1.png)<!-- -->
 
 ## Entrance Fees
 
@@ -722,4 +721,4 @@ ggplot(data = fees, aes(x = entranceFeeType, y = cost)) +
   labs(title = "NPS Fees by Type of Entrance")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-26-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-28-1.png)<!-- -->
