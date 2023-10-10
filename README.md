@@ -1,6 +1,6 @@
 National Park Service API Vignette
 ================
-Sarah Pagan, North Carolina State University
+by Sarah Pagan
 
 - [Overview](#overview)
 - [Requirements](#requirements)
@@ -40,12 +40,22 @@ Additional, helpful documentation about the NPS API is located
 To develop the functions interacting with the NPS API, I used the
 following packages:
 
-`httr` `jsonlite` `dplyr`
+`httr`
+
+`jsonlite`
+
+`dplyr`
 
 In addition to the packages above, I used the following packages to
 manipulate and visualize data:
 
-`stringr` `tidyr` `ggplot2` `sf`
+`stringr`
+
+`tidyr`
+
+`ggplot2`
+
+`sf`
 
 # API Interaction Functions
 
@@ -92,9 +102,9 @@ return(results)
 
 This function interacts with the activities/parks endpoint to retrieve
 parks associated with your activities. The required inputs are `key` and
-`activities`, a character vector of activities (e.g. \`c(“Hiking”,
-“Horse Trekking”)). The output is a tibble of NPS parks related to the
-input activities.
+`activities`, a character vector of activities
+(e.g. `c("Hiking", "Horse Trekking")`). The output is a tibble of NPS
+parks related to the input activities.
 
 ``` r
 get_NPS_activities <- function(key, activities){
@@ -127,7 +137,7 @@ get_NPS_activities <- function(key, activities){
 }
 ```
 
-For reference, these are the categories of activities defined by NPS:
+For reference, here are the categories of activities defined by NPS:
 
 ``` r
 get_activities <- GET(paste0("https://developer.nps.gov/api/v1/activities?api_key=",
@@ -226,7 +236,7 @@ get_NPS_campgrounds <- function(key, park_codes = NULL){
 ## get_NPS_fees
 
 This function interacts with the feespasses endpoint to retrieve data on
-fees associated with your park. The required inputsa are key an
+fees associated with your park. The required inputs are key an
 park_codes, a character vector of park codes (e.g. `c("jotr", "neri")`).
 
 ``` r
@@ -340,8 +350,8 @@ ggplot(NC_map) +
   theme(plot.title = element_text(hjust = 0.5, size = 20))
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-237-1.png)<!-- --> \##
-National NPS Statistics
+![](README_files/figure-gfm/unnamed-chunk-10-1.png)<!-- --> \## National
+NPS Statistics
 
 Let’s use the `get_NPS_parks` function again to pull data on all NPS
 parks. This time, I don’t specify a state and retrieve data on all NPS
@@ -412,7 +422,7 @@ ggplot(data = all_des_5, aes(x = reorder(designation, count))) +
   coord_flip()
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-240-1.png)<!-- --> \### Which
+![](README_files/figure-gfm/unnamed-chunk-13-1.png)<!-- --> \### Which
 states have the most National Monuments?
 
 The National Monument designation category has the most NPS units,
@@ -507,7 +517,7 @@ ggplot(data = climb_swim_states, aes(x = states)) +
   labs(title = "NPS parks with Climbing and/or Swimming by State")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-244-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
 
 ### Which NPS parks have BOTH climbing and swimming recorded as possible activities?
 
@@ -620,7 +630,7 @@ ggplot(my_camps_heat, aes(x = name, y = var, fill = value)) +
 Great Smoky Mountains National Park")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-248-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-21-1.png)<!-- -->
 
 ## Entrance Fees
 
@@ -712,4 +722,4 @@ ggplot(data = fees, aes(x = entranceFeeType, y = cost)) +
   labs(title = "NPS Fees by Type of Entrance")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-253-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-26-1.png)<!-- -->

@@ -1,6 +1,6 @@
 ---
 title: "National Park Service API Vignette"
-author: "Sarah Pagan, North Carolina State University"
+author: "by Sarah Pagan"
 output: 
   github_document:
     toc: TRUE
@@ -36,14 +36,19 @@ Additional, helpful documentation about the NPS API is located [here](https://ww
 To develop the functions interacting with the NPS API, I used the following packages:
 
 `httr`
+
 `jsonlite`
+
 `dplyr`
 
 In addition to the packages above, I used the following packages to manipulate and visualize data:
 
 `stringr`
+
 `tidyr`
+
 `ggplot2`
+
 `sf`
 
 # API Interaction Functions
@@ -83,7 +88,7 @@ return(results)
 
 ## get_NPS_activities
 
-This function interacts with the activities/parks endpoint to retrieve parks associated with your activities. The required inputs are `key` and `activities`, a character vector of activities (e.g. `c("Hiking", "Horse Trekking")). The output is a tibble of NPS parks related to the input activities.
+This function interacts with the activities/parks endpoint to retrieve parks associated with your activities. The required inputs are `key` and `activities`, a character vector of activities (e.g. `c("Hiking", "Horse Trekking")`). The output is a tibble of NPS parks related to the input activities.
 
 ```{r}
 get_NPS_activities <- function(key, activities){
@@ -116,7 +121,7 @@ get_NPS_activities <- function(key, activities){
 }
 ```
 
-For reference, these are the categories of activities defined by NPS:
+For reference, here are the categories of activities defined by NPS:
 
 ```{r}
 get_activities <- GET(paste0("https://developer.nps.gov/api/v1/activities?api_key=",
@@ -188,7 +193,7 @@ get_NPS_campgrounds <- function(key, park_codes = NULL){
 
 ## get_NPS_fees
 
-This function interacts with the feespasses endpoint to retrieve data on fees associated with your park. The required inputsa are key an park_codes, a character vector of park codes (e.g. `c("jotr", "neri")`).
+This function interacts with the feespasses endpoint to retrieve data on fees associated with your park. The required inputs are key an park_codes, a character vector of park codes (e.g. `c("jotr", "neri")`).
 
 ```{r}
 get_NPS_fees <- function(key, park_codes){
