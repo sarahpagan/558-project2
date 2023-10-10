@@ -58,6 +58,8 @@ data:
 
 # API Interaction Functions
 
+![](bear.jpg)
+
 ## get_NPS_parks
 
 This function interacts with the parks endpoint to retrieve NPS parks
@@ -224,7 +226,7 @@ get_NPS_campgrounds <- function(key, park_codes = NULL){
   query <- GET(url)
   camps <- fromJSON(rawToChar(query$content))$data |>
     select(name, parkCode) |>
-    left_join(parks)
+    left_join(parks, by = "parkCode")
   results <- cbind(camps, fromJSON(rawToChar(GET(url)$content))$data$amenities)|>
     as_tibble()
   
@@ -265,7 +267,7 @@ get_NPS_fees <- function(key, park_codes){
 
 # Exploratory Data Analysis
 
-![](bear.jpg)
+![](bears.jpeg)
 
 ## NPS parks in NC
 
@@ -349,7 +351,7 @@ ggplot(NC_map) +
   theme(plot.title = element_text(hjust = 0.5, size = 20))
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-12-1.png)<!-- --> \## National
+![](README_files/figure-gfm/unnamed-chunk-13-1.png)<!-- --> \## National
 NPS Statistics
 
 Let’s use the `get_NPS_parks` function again to pull data on all NPS
@@ -421,7 +423,7 @@ ggplot(data = all_des_5, aes(x = reorder(designation, count))) +
   coord_flip()
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-15-1.png)<!-- --> \### Which
+![](README_files/figure-gfm/unnamed-chunk-16-1.png)<!-- --> \### Which
 states have the most National Monuments?
 
 The National Monument designation category has the most NPS units,
@@ -516,7 +518,7 @@ ggplot(data = climb_swim_states, aes(x = states)) +
   labs(title = "NPS parks with Climbing and/or Swimming by State")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-20-1.png)<!-- -->
 
 ### Which NPS parks have BOTH climbing and swimming recorded as possible activities?
 
@@ -629,7 +631,7 @@ ggplot(my_camps_heat, aes(x = name, y = var, fill = value)) +
 Great Smoky Mountains National Park")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-23-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-24-1.png)<!-- -->
 
 ## Entrance Fees
 
@@ -721,4 +723,4 @@ ggplot(data = fees, aes(x = entranceFeeType, y = cost)) +
   labs(title = "NPS Fees by Type of Entrance")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-28-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-29-1.png)<!-- -->

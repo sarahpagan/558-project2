@@ -53,6 +53,8 @@ In addition, I used the following packages to manipulate and visualize data:
 
 # API Interaction Functions
 
+![](bear.jpg)
+
 ## get_NPS_parks
 
 This function interacts with the parks endpoint to retrieve NPS parks located in your state. The required input is `key` and the optional input is `states`, a character vector of two-letter state codes (e.g. `c("NC", "MI")`).
@@ -183,7 +185,7 @@ get_NPS_campgrounds <- function(key, park_codes = NULL){
   query <- GET(url)
   camps <- fromJSON(rawToChar(query$content))$data |>
     select(name, parkCode) |>
-    left_join(parks)
+    left_join(parks, by = "parkCode")
   results <- cbind(camps, fromJSON(rawToChar(GET(url)$content))$data$amenities)|>
     as_tibble()
   
@@ -222,7 +224,7 @@ get_NPS_fees <- function(key, park_codes){
 
 # Exploratory Data Analysis
 
-![ ](bear.jpg)
+![ ](bears.jpeg)
 
 ## NPS parks in NC
 
@@ -415,7 +417,6 @@ ggplot(my_camps_heat, aes(x = name, y = var, fill = value)) +
   xlab(NULL) + ylab(NULL) +
   labs(title = "Campground Amenities:
 Great Smoky Mountains National Park")
-  
 ```
 
 ## Entrance Fees
