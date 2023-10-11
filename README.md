@@ -10,8 +10,9 @@ by Sarah Pagan
   - [get_NPS_campgrounds](#get_nps_campgrounds)
   - [get_NPS_fees](#get_nps_fees)
 - [Exploratory Data Analysis](#exploratory-data-analysis)
-  - [NPS parks in NC](#nps-parks-in-nc)
-  - [NPS parks with Climbing and
+  - [NPS Parks in North Carolina](#nps-parks-in-north-carolina)
+  - [National Designation Statistics](#national-designation-statistics)
+  - [NPS Parks with Climbing and
     Swimming](#nps-parks-with-climbing-and-swimming)
   - [Campground Amenities at grsm](#campground-amenities-at-grsm)
   - [Entrance Fees](#entrance-fees)
@@ -33,7 +34,6 @@ these functions to perform some exploratory data analysis.
 To retrieve data from the NPS API you will need to sign up for a free
 API key at the [Get Started with the NPS
 API](https://www.nps.gov/subjects/developer/get-started.htm) web page.
-
 Additional, helpful documentation about the NPS API is located
 [here](https://www.nps.gov/subjects/developer/api-documentation.htm).
 
@@ -71,7 +71,7 @@ The output is a tibble of NPS parks. If no state(s) is supplied, the
 function will return parks in all states. There are numerous site
 designations within NPS (other than “National Park”) and descriptions
 for each designation can be found
-[here](https://www.nps.gov/goga/planyourvisit/designations.htm). 3
+[here](https://www.nps.gov/goga/planyourvisit/designations.htm).
 
 ``` r
 get_NPS_parks <- function(key, states = NULL){
@@ -147,20 +147,26 @@ NPS_activities <- fromJSON(rawToChar(get_activities$content))$data$name
 NPS_activities
 ```
 
-    ##  [1] "Arts and Culture"      "Astronomy"             "Auto and ATV"         
-    ##  [4] "Biking"                "Boating"               "Camping"              
-    ##  [7] "Canyoneering"          "Caving"                "Climbing"             
-    ## [10] "Compass and GPS"       "Dog Sledding"          "Fishing"              
-    ## [13] "Flying"                "Food"                  "Golfing"              
-    ## [16] "Guided Tours"          "Hands-On"              "Hiking"               
-    ## [19] "Horse Trekking"        "Hunting and Gathering" "Ice Skating"          
-    ## [22] "Junior Ranger Program" "Living History"        "Museum Exhibits"      
-    ## [25] "Paddling"              "Park Film"             "Playground"           
-    ## [28] "SCUBA Diving"          "Shopping"              "Skiing"               
-    ## [31] "Snorkeling"            "Snow Play"             "Snowmobiling"         
-    ## [34] "Snowshoeing"           "Surfing"               "Swimming"             
-    ## [37] "Team Sports"           "Tubing"                "Water Skiing"         
-    ## [40] "Wildlife Watching"
+    ##  [1] "Arts and Culture"      "Astronomy"            
+    ##  [3] "Auto and ATV"          "Biking"               
+    ##  [5] "Boating"               "Camping"              
+    ##  [7] "Canyoneering"          "Caving"               
+    ##  [9] "Climbing"              "Compass and GPS"      
+    ## [11] "Dog Sledding"          "Fishing"              
+    ## [13] "Flying"                "Food"                 
+    ## [15] "Golfing"               "Guided Tours"         
+    ## [17] "Hands-On"              "Hiking"               
+    ## [19] "Horse Trekking"        "Hunting and Gathering"
+    ## [21] "Ice Skating"           "Junior Ranger Program"
+    ## [23] "Living History"        "Museum Exhibits"      
+    ## [25] "Paddling"              "Park Film"            
+    ## [27] "Playground"            "SCUBA Diving"         
+    ## [29] "Shopping"              "Skiing"               
+    ## [31] "Snorkeling"            "Snow Play"            
+    ## [33] "Snowmobiling"          "Snowshoeing"          
+    ## [35] "Surfing"               "Swimming"             
+    ## [37] "Team Sports"           "Tubing"               
+    ## [39] "Water Skiing"          "Wildlife Watching"
 
 ## get_NPS_campgrounds
 
@@ -170,9 +176,6 @@ about amenities at campgrounds in your park.
 The preceding function, `get_NPS_codes`, retrieves park codes for all
 parks. It can be used to look up the official code for your park and is
 used in the main campgrounds function to join park names by `parkCode`.
-
-Below, I look up the `parkCode` for each of my parks of interest –
-Joshua Tree and the New River Gorge.
 
 ``` r
 get_NPS_codes <- function(key) {
@@ -186,20 +189,6 @@ get_NPS_codes <- function(key) {
     as_tibble()
 }
 ```
-
-``` r
-library(stringr)
-all_codes <- get_NPS_codes(my_key) 
-my_codes <- all_codes |>
-  filter(str_detect(fullName, "Joshua Tree|New River"))
-my_codes
-```
-
-    ## # A tibble: 2 × 3
-    ##   fullName                                 parkCode states
-    ##   <chr>                                    <chr>    <chr> 
-    ## 1 Joshua Tree National Park                jotr     CA    
-    ## 2 New River Gorge National Park & Preserve neri     WV
 
 Now for the `get_NPS_campgrounds` function, the required input is `key`
 and the optional input is `park_codes`, a character vector of park codes
@@ -253,7 +242,7 @@ get_NPS_fees <- function(key, park_codes){
   
   if(length(results) > 0){
     results <- results |>
-      select(entranceFeeType, cost, description) |>
+      select(entranceFeeType, cost) |>
       mutate(cost = as.numeric(cost))
   }
   
@@ -269,7 +258,7 @@ get_NPS_fees <- function(key, park_codes){
 
 ![](bears.jpeg)
 
-## NPS parks in NC
+## NPS Parks in North Carolina
 
 First, let’s pull data on all NPS parks in North Carolina using the
 `get_NPS_parks` function.
@@ -280,24 +269,24 @@ NC_parks
 ```
 
     ## # A tibble: 12 × 6
-    ##    fullName                                parkC…¹ states desig…² latit…³ longi…⁴
-    ##    <chr>                                   <chr>   <chr>  <chr>     <dbl>   <dbl>
-    ##  1 Appalachian National Scenic Trail       appa    CT,GA… Nation…    40.4   -76.4
-    ##  2 Blue Ridge Parkway                      blri    NC,VA  Parkway    35.6   -82.5
-    ##  3 Cape Hatteras National Seashore         caha    NC     Nation…    35.4   -75.7
-    ##  4 Cape Lookout National Seashore          calo    NC     Nation…    34.8   -76.3
-    ##  5 Carl Sandburg Home National Historic S… carl    NC     Nation…    35.3   -82.5
-    ##  6 Fort Raleigh National Historic Site     fora    NC     Nation…    35.9   -75.7
-    ##  7 Great Smoky Mountains National Park     grsm    NC,TN  Nation…    35.6   -83.5
-    ##  8 Guilford Courthouse National Military … guco    NC     Nation…    36.1   -79.8
-    ##  9 Moores Creek National Battlefield       mocr    NC     Nation…    34.5   -78.1
-    ## 10 Overmountain Victory National Historic… ovvi    NC,SC… Nation…    35.1   -81.4
-    ## 11 Trail Of Tears National Historic Trail  trte    AL,AR… Nation…    36.1   -89.7
-    ## 12 Wright Brothers National Memorial       wrbr    NC     Nation…    36.0   -75.7
-    ## # … with abbreviated variable names ¹​parkCode, ²​designation, ³​latitude,
-    ## #   ⁴​longitude
+    ##    fullName           parkC…¹ states desig…² latit…³ longi…⁴
+    ##    <chr>              <chr>   <chr>  <chr>     <dbl>   <dbl>
+    ##  1 Appalachian Natio… appa    CT,GA… Nation…    40.4   -76.4
+    ##  2 Blue Ridge Parkway blri    NC,VA  Parkway    35.6   -82.5
+    ##  3 Cape Hatteras Nat… caha    NC     Nation…    35.4   -75.7
+    ##  4 Cape Lookout Nati… calo    NC     Nation…    34.8   -76.3
+    ##  5 Carl Sandburg Hom… carl    NC     Nation…    35.3   -82.5
+    ##  6 Fort Raleigh Nati… fora    NC     Nation…    35.9   -75.7
+    ##  7 Great Smoky Mount… grsm    NC,TN  Nation…    35.6   -83.5
+    ##  8 Guilford Courthou… guco    NC     Nation…    36.1   -79.8
+    ##  9 Moores Creek Nati… mocr    NC     Nation…    34.5   -78.1
+    ## 10 Overmountain Vict… ovvi    NC,SC… Nation…    35.1   -81.4
+    ## 11 Trail Of Tears Na… trte    AL,AR… Nation…    36.1   -89.7
+    ## 12 Wright Brothers N… wrbr    NC     Nation…    36.0   -75.7
+    ## # … with abbreviated variable names ¹​parkCode,
+    ## #   ²​designation, ³​latitude, ⁴​longitude
 
-### Which designation categories are represented by NC’s NPS parks?
+### Which designation categories are represented by North Carolina’s NPS parks?
 
 North Carolina has twelve NPS parks in total. It turns out it’s a pretty
 diverse set of parks as well, including nine unique designations.
@@ -326,9 +315,9 @@ NC_parks |>
 
 The data pull from `get_NPS_parks` includes information on latitude and
 longitude coordinates for each park. I use this data to plot the parks
-on a map of NC below. I exclude the Trail Of Tears National Historic
-Trail and the Appalachian National Scenic Trail since their recorded
-geographic coordinates lie outside the state.
+on a map of North Carolina below. I exclude the Trail Of Tears National
+Historic Trail and the Appalachian National Scenic Trail since their
+recorded geographic coordinates lie outside the state.
 
 ``` r
 NC <- NC_parks |>
@@ -341,18 +330,20 @@ ggplot(NC_map) +
                                       y = latitude),
              color = "grey20",
              shape = 17,
-             size = 3) +
+             size = 2) +
   ggrepel::geom_text_repel(data = NC, aes(x = longitude,
                                           y = latitude,
                                           label = parkCode),
                            size = 5) +
   labs(title = "NPS Parks in North Carolina") +
-  xlab(NULL) + ylab(NULL) +
+  theme_minimal() +
+    xlab(NULL) + ylab(NULL) +
   theme(plot.title = element_text(hjust = 0.5, size = 20))
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-13-1.png)<!-- --> \## National
-NPS Statistics
+![](README_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+
+## National Designation Statistics
 
 Let’s use the `get_NPS_parks` function again to pull data on all NPS
 parks. This time, I don’t specify a state and retrieve data on all NPS
@@ -364,20 +355,20 @@ all_parks
 ```
 
     ## # A tibble: 471 × 6
-    ##    fullName                                parkC…¹ states desig…² latit…³ longi…⁴
-    ##    <chr>                                   <chr>   <chr>  <chr>     <dbl>   <dbl>
-    ##  1 Abraham Lincoln Birthplace National Hi… abli    KY     "Natio…    37.6   -85.7
-    ##  2 Acadia National Park                    acad    ME     "Natio…    44.4   -68.2
-    ##  3 Adams National Historical Park          adam    MA     "Natio…    42.3   -71.0
-    ##  4 African American Civil War Memorial     afam    DC     ""         38.9   -77.0
-    ##  5 African Burial Ground National Monument afbg    NY     "Natio…    40.7   -74.0
-    ##  6 Agate Fossil Beds National Monument     agfo    NE     "Natio…    42.4  -104. 
-    ##  7 Ala Kahakai National Historic Trail     alka    HI     "Natio…    19.1  -156. 
-    ##  8 Alagnak Wild River                      alag    AK     "Wild …    59.1  -156. 
-    ##  9 Alaska Public Lands                     anch    AK     ""         61.2  -150. 
-    ## 10 Alcatraz Island                         alca    CA     ""         37.8  -122. 
-    ## # … with 461 more rows, and abbreviated variable names ¹​parkCode, ²​designation,
-    ## #   ³​latitude, ⁴​longitude
+    ##    fullName           parkC…¹ states desig…² latit…³ longi…⁴
+    ##    <chr>              <chr>   <chr>  <chr>     <dbl>   <dbl>
+    ##  1 Abraham Lincoln B… abli    KY     "Natio…    37.6   -85.7
+    ##  2 Acadia National P… acad    ME     "Natio…    44.4   -68.2
+    ##  3 Adams National Hi… adam    MA     "Natio…    42.3   -71.0
+    ##  4 African American … afam    DC     ""         38.9   -77.0
+    ##  5 African Burial Gr… afbg    NY     "Natio…    40.7   -74.0
+    ##  6 Agate Fossil Beds… agfo    NE     "Natio…    42.4  -104. 
+    ##  7 Ala Kahakai Natio… alka    HI     "Natio…    19.1  -156. 
+    ##  8 Alagnak Wild River alag    AK     "Wild …    59.1  -156. 
+    ##  9 Alaska Public Lan… anch    AK     ""         61.2  -150. 
+    ## 10 Alcatraz Island    alca    CA     ""         37.8  -122. 
+    ## # … with 461 more rows, and abbreviated variable names
+    ## #   ¹​parkCode, ²​designation, ³​latitude, ⁴​longitude
 
 ### Nationally, which NPS designation categories have the most parks?
 
@@ -423,14 +414,15 @@ ggplot(data = all_des_5, aes(x = reorder(designation, count))) +
   coord_flip()
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-16-1.png)<!-- --> \### Which
-states have the most National Monuments?
+![](README_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+
+### Which states have the most National Monuments?
 
 The National Monument designation category has the most NPS units,
 therefore I break down the total count of National Monuments by state in
 the summary table below. The southwest region of the country has the
-highest concentration of monuments. Arizona leads the count with
-thirteen monuments, and is followed by New Mexico with nine monuments.
+highest concentration of monuments. Arizona leads the count with 13
+monuments, and is followed by New Mexico with 9 monuments.
 
 ``` r
 all_parks |>
@@ -456,7 +448,7 @@ all_parks |>
     ##  9 FL         2
     ## 10 GA         2
 
-## NPS parks with Climbing and Swimming
+## NPS Parks with Climbing and Swimming
 
 Next, let’s use the `get_NPS_activities` function to pull data on all
 parks with “Climbing” and/or “Swimming” recorded as possible activities.
@@ -467,19 +459,20 @@ climb_swim
 ```
 
     ## # A tibble: 91 × 4
-    ##    fullName                                         parkCode states activity
-    ##    <chr>                                            <chr>    <chr>  <chr>   
-    ##  1 Acadia National Park                             acad     ME     Climbing
-    ##  2 Aniakchak National Monument & Preserve           ania     AK     Climbing
-    ##  3 Arches National Park                             arch     UT     Climbing
-    ##  4 Big South Fork National River & Recreation Area  biso     KY,TN  Climbing
-    ##  5 Black Canyon Of The Gunnison National Park       blca     CO     Climbing
-    ##  6 Canyonlands National Park                        cany     UT     Climbing
-    ##  7 Capitol Reef National Park                       care     UT     Climbing
-    ##  8 Catoctin Mountain Park                           cato     MD     Climbing
-    ##  9 Chickamauga & Chattanooga National Military Park chch     GA,TN  Climbing
-    ## 10 City Of Rocks National Reserve                   ciro     ID     Climbing
-    ## # … with 81 more rows
+    ##    fullName                           parkC…¹ states activ…²
+    ##    <chr>                              <chr>   <chr>  <chr>  
+    ##  1 Acadia National Park               acad    ME     Climbi…
+    ##  2 Aniakchak National Monument & Pre… ania    AK     Climbi…
+    ##  3 Arches National Park               arch    UT     Climbi…
+    ##  4 Big South Fork National River & R… biso    KY,TN  Climbi…
+    ##  5 Black Canyon Of The Gunnison Nati… blca    CO     Climbi…
+    ##  6 Canyonlands National Park          cany    UT     Climbi…
+    ##  7 Capitol Reef National Park         care    UT     Climbi…
+    ##  8 Catoctin Mountain Park             cato    MD     Climbi…
+    ##  9 Chickamauga & Chattanooga Nationa… chch    GA,TN  Climbi…
+    ## 10 City Of Rocks National Reserve     ciro    ID     Climbi…
+    ## # … with 81 more rows, and abbreviated variable names
+    ## #   ¹​parkCode, ²​activity
 
 ### How many parks have climbing, and how many parks have swimming?
 
@@ -502,9 +495,11 @@ climb_swim |>
 
 Alaska is unsurprisingly dominated by climbing destinations. California
 has the highest number of total parks, with an even mix of climbing and
-swimming availability. Unfortunately, North Carolina has no parks with
-climbing availability, but only swimming. It’s a good thing we have have
-great state parks for climbing!
+swimming availability.
+
+Unfortunately, North Carolina has no parks with climbing availability,
+only swimming destinations. It’s a good thing we have have great state
+parks for climbing!
 
 ``` r
 climb_swim_states <- climb_swim |>
@@ -518,7 +513,7 @@ ggplot(data = climb_swim_states, aes(x = states)) +
   labs(title = "NPS parks with Climbing and/or Swimming by State")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-20-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
 
 ### Which NPS parks have BOTH climbing and swimming recorded as possible activities?
 
@@ -631,7 +626,7 @@ ggplot(my_camps_heat, aes(x = name, y = var, fill = value)) +
 Great Smoky Mountains National Park")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-24-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-20-1.png)<!-- -->
 
 ## Entrance Fees
 
@@ -648,8 +643,20 @@ get_NPS_fees(my_key, "grsm")
 
 ### Does Yosemite National Park have entrance fees?
 
-Let’s try another park. It looks like Yosemite has entrance fees for all
-visitors with the exception of Education/Academic Groups.
+Let’s try finding fees for Yosemite National Park.
+
+``` r
+get_NPS_codes(my_key) |>
+  filter(str_detect(fullName, "Yosemite"))
+```
+
+    ## # A tibble: 1 × 3
+    ##   fullName               parkCode states
+    ##   <chr>                  <chr>    <chr> 
+    ## 1 Yosemite National Park yose     CA
+
+It looks like Yosemite has entrance fees for all visitors with the
+exception of Education/Academic Groups.
 
 ``` r
 get_NPS_fees(my_key, "yose")
@@ -666,19 +673,8 @@ get_NPS_fees(my_key, "yose")
     ## 8      Entrance - Non-commercial Groups   20
     ## 9  Entrance - Education/Academic Groups    0
     ## 10     Commercial Entrance - Per Person   20
-    ##                                                                                                                                                                                                                                               description
-    ## 1                                                                This fee is valid for seven consecutive days for a non-commercial car, pickup truck, RV, or van with 15 or fewer passenger seats. This fee covers the vehicle and everyone inside of it.
-    ## 2                                                                                                                                      This fee is valid for seven consecutive days for a non-commercial motorcycle (cost is per motorcycle, not person).
-    ## 3                                                                                     This fee is valid for seven consecutive days for people entering on foot, a bicycle, a horse, or a non-commercial bus or van. People 15 years and younger are free.
-    ## 4                                                                                                       The fee is $25 plus $20 per person, not to exceed $105. This fee is valid for seven consecutive days. A commercial use authorization is required.
-    ## 5                                                                                                                                                               This fee is valid for seven consecutive days. A commercial use authorization is required.
-    ## 6                                                                                                                                                               This fee is valid for seven consecutive days. A commercial use authorization is required.
-    ## 7                                                                                                                                                               This fee is valid for seven consecutive days. A commercial use authorization is required.
-    ## 8                                                                                                                                                                      This fee is valid for seven consecutive days. People 15 years and younger are free
-    ## 9  An educational fee waiver is available for educational and scientific groups that are accredited or tax-exempt for educational purposes planning a trip for educational or scientific purposes related to Yosemite that is not primarily recreational.
-    ## 10                                                                                                      The fee is $25 plus $20 per person, not to exceed $105. This fee is valid for seven consecutive days. A commercial use authorization is required.
 
-### On avergae, what is the cost of non-commerical, non-group entrance to NPS parks?
+### On average, what is the cost of non-commerical, non-group entrance to NPS parks?
 
 I use the `get_NPS_fees` function to pull data on fees for all park
 codes. The function will exclude parks that don’t have any fees listed.
@@ -723,4 +719,4 @@ ggplot(data = fees, aes(x = entranceFeeType, y = cost)) +
   labs(title = "NPS Fees by Type of Entrance")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-29-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-26-1.png)<!-- -->
