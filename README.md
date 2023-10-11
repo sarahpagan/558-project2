@@ -84,13 +84,15 @@ get_NPS_parks <- function(key, states = NULL){
     url <- paste0("https://developer.nps.gov/api/v1/parks?api_key=",
                   key,
                   "&stateCode=",
-                  paste(states, collapse = ","), #combine states into string
+                  paste(states, collapse = ","),
                   "&limit=10000")
   }
 
-query <- GET(url)
+query <- GET(url) #get data from api
 results <- fromJSON(rawToChar(query$content))$data |>
+  #select vars
   select(fullName, parkCode, states, designation, latitude, longitude) |>
+  #coerce longitude and latitude to numeric
   mutate(latitude = as.numeric(latitude), longitude = as.numeric(longitude)) |>
   as_tibble()
 
@@ -108,8 +110,8 @@ parks related to the input activities.
 
 ``` r
 get_NPS_activities <- function(key, activities){
-  acts <- paste(activities, collapse = ",") #combine activities into string
-  acts <- sub(" ", "%20", acts) #remove spaces
+  acts <- paste(activities, collapse = ",")
+  acts <- sub(" ", "%20", acts)
   
   url <- paste0("https://developer.nps.gov/api/v1/activities/parks?api_key=",
                 key,
@@ -117,21 +119,20 @@ get_NPS_activities <- function(key, activities){
                 acts,
                 "&limit=10000")
   
-  query <- GET(url)
+  query <- GET(url) #get data from api
   results <- fromJSON(rawToChar(query$content))$data$parks
   
-  #add column for activity
-  activity <- c()
+  activity <- c() #build column for activity
   for (i in 1:length(activities)){
     y <- rep(activities[i],
              nrow(results[[i]]))
     activity <- append(activity, y)
   }
   
-  results <- results |>
+  results <- results |> 
     bind_rows() |>
-    cbind(activity) |>
-    select(fullName, parkCode, states, activity) |>
+    cbind(activity) |> #add activity column
+    select(fullName, parkCode, states, activity) |> #select vars
     as_tibble()
   
   return(results)
@@ -182,9 +183,9 @@ get_NPS_codes <- function(key) {
                 key,
                 "&limit=10000")
   
-  query <- GET(url)
+  query <- GET(url) #get data from api
   results <- fromJSON(rawToChar(query$content))$data |>
-    select(fullName, parkCode, states) |>
+    select(fullName, parkCode, states) |> #select vars
     as_tibble()
   
   return(results)
@@ -197,7 +198,7 @@ and the optional input is `park_codes`, a character vector of park codes
 
 ``` r
 get_NPS_campgrounds <- function(key, park_codes = NULL){
-  parks <- get_NPS_codes(key)
+  parks <- get_NPS_codes(key) #get park names and codes
   
   if(is.null(park_codes)){
     url <- paste0("https://developer.nps.gov/api/v1/campgrounds?api_key=",
@@ -209,17 +210,18 @@ get_NPS_campgrounds <- function(key, park_codes = NULL){
     url <- paste0("https://developer.nps.gov/api/v1/campgrounds?api_key=",
                   key,
                   "&parkCode=",
-                  paste(park_codes, collapse = ","), #combine park codes into string
+                  paste(park_codes, collapse = ","),
                   "&limit=10000")
   }
   
-  query <- GET(url)
+  query <- GET(url) #get data from api
   
-  #add columns for park name and park code
+  #join campground names with park names and park codes
   camps <- fromJSON(rawToChar(query$content))$data |>
     select(name, parkCode) |>
     left_join(parks, by = "parkCode")
   
+  #column bind camps data with amenities data
   results <- cbind(camps, fromJSON(rawToChar(GET(url)$content))$data$amenities)|>
     as_tibble()
   
@@ -239,16 +241,18 @@ get_NPS_fees <- function(key, park_codes){
   url <- paste0("https://developer.nps.gov/api/v1/feespasses?api_key=",
                 key,
                 "&parkCode=",
-                paste(park_codes, collapse = ","), #combine park codes into string
+                paste(park_codes, collapse = ","),
                 "&limit=10000")
-  query <- GET(url)
+  
+  query <- GET(url) #get data from api
   results <- fromJSON(rawToChar(query$content))$data$fees |>
     bind_rows()
   
+  #if returned list is not empty (park has fees)
   if(length(results) > 0){
     results <- results |>
-      select(entranceFeeType, cost) |>
-      mutate(cost = as.numeric(cost))
+      select(entranceFeeType, cost) |> #select vars
+      mutate(cost = as.numeric(cost)) #coerce cost to numeric
   }
   
   #stop if empty list is returned
@@ -381,7 +385,7 @@ below.
 ``` r
 all_des <- all_parks |>
   group_by(designation) |>
-  filter(!designation == "") |> #remove blank values
+  filter(!designation == "") |>
   summarise(count = n()) |>
   arrange(desc(count))
 
@@ -428,11 +432,11 @@ monuments, and is followed by New Mexico with 9 monuments.
 ``` r
 all_parks |>
   filter(designation == "National Monument") |>
-  separate_rows(states) |> #separate lists of states into individual rows
+  separate_rows(states) |>
   group_by(states) |>
   summarise(count = n()) |>
   arrange(desc(count)) |>
-  slice(1:10) #show top 10
+  slice(1:10)
 ```
 
     ## # A tibble: 10 × 2
@@ -504,7 +508,7 @@ parks for climbing!
 
 ``` r
 climb_swim_states <- climb_swim |>
-  separate_rows(states, sep = ",") #separate lists of states into individual rows
+  separate_rows(states, sep = ",")
 
 ggplot(data = climb_swim_states, aes(x = states)) + 
   geom_bar(aes(fill = activity)) +
@@ -523,7 +527,7 @@ Only nine parks have both climbing and swimming!
 ``` r
 climb_and_swim <- climb_swim |>
   group_by(fullName) |>
-  filter(n() > 1) |> #subset by parks that appear twice (climbing and swimming)
+  filter(n() > 1) |>
   select(-activity) |>
   distinct(fullName, states)
 
