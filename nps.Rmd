@@ -39,7 +39,7 @@ To develop my API interaction functions, I used the following packages:
 
 `dplyr`
 
-In addition, I used the following packages to manipulate and visualize data:
+I also used these packages to manipulate and visualize data:
 
 `stringr`
 
@@ -168,7 +168,7 @@ get_NPS_campgrounds <- function(key, park_codes = NULL){
     url <- paste0("https://developer.nps.gov/api/v1/campgrounds?api_key=",
                   key,
                   "&parkCode=",
-                  paste(park_codes, collapse = ","), #combine park code into string
+                  paste(park_codes, collapse = ","), #combine park codes into string
                   "&limit=10000")
   }
   
@@ -195,7 +195,7 @@ get_NPS_fees <- function(key, park_codes){
   url <- paste0("https://developer.nps.gov/api/v1/feespasses?api_key=",
                 key,
                 "&parkCode=",
-                paste(park_codes, collapse = ","), #combine park code into string
+                paste(park_codes, collapse = ","), #combine park codes into string
                 "&limit=10000")
   query <- GET(url)
   results <- fromJSON(rawToChar(query$content))$data$fees |>
@@ -395,8 +395,8 @@ my_camps_heat <- my_camps |>
          firewoodForSale) |>
   mutate(potableWater = unlist(potableWater)) |>
   mutate(toilets = unlist(toilets)) |>
-  pivot_longer(!name, names_to = "var", values_to = "value") |>
-  mutate(value = recode(value, 
+  pivot_longer(!name, names_to = "var", values_to = "value") |> #pivot and re-code values
+  mutate(value = recode(value,
                         "No" = "0",
                         "No water" = "0",
                         "Yes - year round" = "1",
