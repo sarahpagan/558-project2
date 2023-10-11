@@ -25,7 +25,7 @@ my_key <- "oKmYKW6S1dOrI47ra4laE70chvKFy5WGV1c0Pjgo"
 
 # Overview
 
-This document demonstrates how to retrieve and summarize data from the United States National Parks Service (NPS) [API](https://www.nps.gov/subjects/developer/api-documentation.htm). The NPS API provides access to data about official NPS parks and their activities, campgrounds, events, photos, and more. In this vignette, I build functions to interact with four of the API's endpoints. I then use these functions to perform some exploratory data analysis.
+This document demonstrates how to retrieve and summarize data from the United States National Park Service (NPS) [API](https://www.nps.gov/subjects/developer/api-documentation.htm). The NPS API provides access to data about official NPS parks and their activities, campgrounds, events, photos, and more. In this vignette, I build functions to interact with four of the API's endpoints. I then use these functions to perform some exploratory data analysis.
 
 # Requirements
 
@@ -57,7 +57,7 @@ In addition, I used the following packages to manipulate and visualize data:
 
 This function interacts with the parks endpoint to retrieve NPS parks located in your state. The required input is `key` and the optional input is `states`, a character vector of two-letter state codes (e.g. `c("NC", "MI")`).
 
-The output is a tibble of NPS parks. If no state(s) is supplied, the function will return parks in all states. There are numerous site designations within NPS (other than "National Park") and descriptions for each designation can be found [here](https://www.nps.gov/goga/planyourvisit/designations.htm).
+The output is a tibble of NPS parks. If no state(s) is supplied, the function will return parks in all states. One variable included in the output is `designation`. There are numerous site designations (other than "National Park") and descriptions for each designation can be found [here](https://www.nps.gov/goga/planyourvisit/designations.htm).
 
 ```{r}
 get_NPS_parks <- function(key, states = NULL){
@@ -124,8 +124,7 @@ get_NPS_activities <- function(key, activities){
 For reference, here are the categories of activities defined by NPS:
 
 ```{r}
-get_activities <- GET(paste0("https://developer.nps.gov/api/v1/activities?api_key=",
-                             my_key))
+get_activities <- GET(paste0("https://developer.nps.gov/api/v1/activities?api_key=", my_key))
 NPS_activities <- fromJSON(rawToChar(get_activities$content))$data$name
 NPS_activities
 ```
@@ -142,11 +141,13 @@ get_NPS_codes <- function(key) {
   url <- paste0("https://developer.nps.gov/api/v1/parks?api_key=",
                 key,
                 "&limit=10000")
+  
   query <- GET(url)
-  results <- fromJSON(rawToChar(query$content))$data
-  results |>
+  results <- fromJSON(rawToChar(query$content))$data |>
     select(fullName, parkCode, states) |>
     as_tibble()
+  
+  return(results)
 }
 ```
 
@@ -162,7 +163,7 @@ get_NPS_campgrounds <- function(key, park_codes = NULL){
                   "&limit=10000")
   }
   
-  if(!is.null(park_codes)){
+  else{
     url <- paste0("https://developer.nps.gov/api/v1/campgrounds?api_key=",
                   key,
                   "&parkCode=",
@@ -183,7 +184,7 @@ get_NPS_campgrounds <- function(key, park_codes = NULL){
 
 ## get_NPS_fees
 
-This function interacts with the feespasses endpoint to retrieve data on fees associated with your park. The required inputs are key an park_codes, a character vector of park codes (e.g. `c("jotr", "neri")`).
+This function interacts with the feespasses endpoint to retrieve data on fees associated with your park. The required inputs are `key` and `park_codes`, a character vector of park codes (e.g. `c("jotr", "neri")`).
 
 ```{r}
 get_NPS_fees <- function(key, park_codes){
@@ -223,9 +224,9 @@ NC_parks <- get_NPS_parks(my_key, "NC")
 NC_parks
 ```
 
-### Which designation categories are represented by North Carolina's NPS parks?
+### Which designation categories are represented by North Carolina's NPS units?
 
-North Carolina has twelve NPS parks in total. It turns out it's a pretty diverse set of parks as well, including nine unique designations.
+North Carolina has 12 NPS units in total. It turns out it's a pretty diverse set of parks as well, including nine unique designations.
 
 ```{r}
 NC_parks |>
@@ -234,9 +235,9 @@ NC_parks |>
   arrange(desc(count))
 ```
 
-### Where are NC's NPS parks located?
+### Where are North Carolina's NPS units located?
 
-The data pull from `get_NPS_parks` includes information on latitude and longitude coordinates for each park. I use this data to plot the parks on a map of North Carolina below. I exclude the Trail Of Tears National Historic Trail and the Appalachian National Scenic Trail since their recorded geographic coordinates lie outside the state.
+The data pull from `get_NPS_parks` includes information on latitude and longitude coordinates for each unit. I use this data to plot the parks on a map of North Carolina below. I exclude the Trail Of Tears National Historic Trail and the Appalachian National Scenic Trail since their recorded geographic coordinates lie outside the state.
 
 ```{r}
 NC <- NC_parks |>
@@ -245,31 +246,26 @@ NC <- NC_parks |>
 NC_map <- st_read(system.file("shape/nc.shp", package="sf"), quiet = TRUE)
 ggplot(NC_map) +
   geom_sf(color = "seagreen3", fill = "honeydew", linewidth = 0.3) +
-  geom_point(data = NC, mapping = aes(x = longitude,
-                                      y = latitude),
-             color = "grey20",
-             shape = 17,
-             size = 2) +
-  ggrepel::geom_text_repel(data = NC, aes(x = longitude,
-                                          y = latitude,
-                                          label = parkCode),
+  geom_point(data = NC, mapping = aes(x = longitude, y = latitude),
+             color = "grey20", shape = 17, size = 2) +
+  ggrepel::geom_text_repel(data = NC, aes(x = longitude, y = latitude, label = parkCode),
                            size = 5) +
   labs(title = "NPS Parks in North Carolina") +
   theme_minimal() +
-    xlab(NULL) + ylab(NULL) +
+  xlab(NULL) + ylab(NULL) +
   theme(plot.title = element_text(hjust = 0.5, size = 20))
 ```
 
 ## National Designation Statistics
 
-Let's use the `get_NPS_parks` function again to pull data on all NPS parks. This time, I don't specify a state and retrieve data on all NPS parks in the nation.
+Let's use the `get_NPS_parks` function again to pull data on all NPS units. This time, I don't specify a state and retrieve data on all NPS parks in the nation.
 
 ```{r}
 all_parks <- get_NPS_parks(my_key)
 all_parks
 ```
 
-### Nationally, which NPS designation categories have the most parks?  
+### Nationally, which NPS designation categories have the most units?  
 
 The National Monument and National Historic Site categories have the most NPS units, followed by National Historical Park, National Park, and National Historic Trail. I plot counts for these top five designations below.
 
@@ -343,7 +339,7 @@ ggplot(data = climb_swim_states, aes(x = states)) +
   scale_fill_manual(values = c("grey20", "turquoise3")) +
   theme(axis.text.x = element_text(angle = 90)) +
   xlab("state") +
-  labs(title = "NPS parks with Climbing and/or Swimming by State")
+  labs(title = "NPS Parks with Climbing and/or Swimming by State")
 ```
 
 ### Which NPS parks have BOTH climbing and swimming recorded as possible activities?
@@ -359,6 +355,7 @@ climb_and_swim <- climb_swim |>
 
 climb_and_swim
 ```
+
 ## Campground Amenities at grsm
 
 I want to visit Great Smoky Mountains National Park. Let's use the `get_NPS_camgrounds` function to see how many campgrounds the park has available.
