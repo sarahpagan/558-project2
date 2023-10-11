@@ -71,7 +71,7 @@ get_NPS_parks <- function(key, states = NULL){
     url <- paste0("https://developer.nps.gov/api/v1/parks?api_key=",
                   key,
                   "&stateCode=",
-                  paste(states, collapse = ","),
+                  paste(states, collapse = ","), #combine states into string
                   "&limit=10000")
   }
 
@@ -92,8 +92,8 @@ This function interacts with the activities/parks endpoint to retrieve parks ass
 
 ```{r}
 get_NPS_activities <- function(key, activities){
-  acts <- paste(activities, collapse = ",")
-  acts <- sub(" ", "%20", acts)
+  acts <- paste(activities, collapse = ",") #combine activities into string
+  acts <- sub(" ", "%20", acts) #remove spaces
   
   url <- paste0("https://developer.nps.gov/api/v1/activities/parks?api_key=",
                 key,
@@ -104,6 +104,7 @@ get_NPS_activities <- function(key, activities){
   query <- GET(url)
   results <- fromJSON(rawToChar(query$content))$data$parks
   
+  #add column for activity
   activity <- c()
   for (i in 1:length(activities)){
     y <- rep(activities[i],
@@ -167,14 +168,17 @@ get_NPS_campgrounds <- function(key, park_codes = NULL){
     url <- paste0("https://developer.nps.gov/api/v1/campgrounds?api_key=",
                   key,
                   "&parkCode=",
-                  paste(park_codes, collapse = ","),
+                  paste(park_codes, collapse = ","), #combine park code into string
                   "&limit=10000")
   }
   
   query <- GET(url)
+  
+  #add columns for park name and park code
   camps <- fromJSON(rawToChar(query$content))$data |>
     select(name, parkCode) |>
     left_join(parks, by = "parkCode")
+  
   results <- cbind(camps, fromJSON(rawToChar(GET(url)$content))$data$amenities)|>
     as_tibble()
   
@@ -191,7 +195,7 @@ get_NPS_fees <- function(key, park_codes){
   url <- paste0("https://developer.nps.gov/api/v1/feespasses?api_key=",
                 key,
                 "&parkCode=",
-                paste(park_codes, collapse = ","),
+                paste(park_codes, collapse = ","), #combine park code into string
                 "&limit=10000")
   query <- GET(url)
   results <- fromJSON(rawToChar(query$content))$data$fees |>
@@ -203,6 +207,7 @@ get_NPS_fees <- function(key, park_codes){
       mutate(cost = as.numeric(cost))
   }
   
+  #stop if empty list is returned
   else{
     stop(message = "No fees!")
   }
@@ -272,7 +277,7 @@ The National Monument and National Historic Site categories have the most NPS un
 ```{r}
 all_des <- all_parks |>
   group_by(designation) |>
-  filter(!designation == "") |>
+  filter(!designation == "") |> #remove blank values
   summarise(count = n()) |>
   arrange(desc(count))
 
@@ -298,11 +303,11 @@ The National Monument designation category has the most NPS units, therefore I b
 ```{r}
 all_parks |>
   filter(designation == "National Monument") |>
-  separate_rows(states) |>
+  separate_rows(states) |> #separate lists of states into individual rows
   group_by(states) |>
   summarise(count = n()) |>
   arrange(desc(count)) |>
-  slice(1:10)
+  slice(1:10) #show top 10
 ```
 
 ## NPS Parks with Climbing and Swimming
@@ -332,7 +337,7 @@ Unfortunately, North Carolina has no parks with climbing availability, only swim
 
 ```{r}
 climb_swim_states <- climb_swim |>
-  separate_rows(states, sep = ",")
+  separate_rows(states, sep = ",") #separate lists of states into individual rows
 
 ggplot(data = climb_swim_states, aes(x = states)) + 
   geom_bar(aes(fill = activity)) +
@@ -349,7 +354,7 @@ Only nine parks have both climbing and swimming!
 ```{r}
 climb_and_swim <- climb_swim |>
   group_by(fullName) |>
-  filter(n() > 1) |>
+  filter(n() > 1) |> #subset by parks that appear twice (climbing and swimming)
   select(-activity) |>
   distinct(fullName, states)
 
@@ -362,7 +367,7 @@ I want to visit Great Smoky Mountains National Park. Let's use the `get_NPS_camg
 
 ```{r}
 get_NPS_codes(my_key) |>
-  filter(str_detect(fullName, "Great Smoky"))
+  filter(str_detect(fullName, "Great Smoky")) #get park code
 ```
 
 Great Smoky Mountains National Park has 13 campgrounds recorded.
@@ -416,7 +421,7 @@ Great Smoky Mountains National Park")
 Finally, let's use the `get_NPS_fees` to pull entrance fees for grsm. Good news...no fees!
 
 ```{r}
-get_NPS_fees(my_key, "grsm")
+get_NPS_fees(my_key, "grsm") 
 ```
 
 ### Does Yosemite National Park have entrance fees?
@@ -425,13 +430,13 @@ Let's try finding fees for Yosemite National Park.
 
 ```{r}
 get_NPS_codes(my_key) |>
-  filter(str_detect(fullName, "Yosemite"))
+  filter(str_detect(fullName, "Yosemite")) #get park code
 ```
 
 It looks like Yosemite has entrance fees for all visitors with the exception of Education/Academic Groups.
 
 ```{r}
-get_NPS_fees(my_key, "yose")
+get_NPS_fees(my_key, "yose") 
 ```
 
 ### On average, what is the cost of non-commerical, non-group entrance to NPS parks?

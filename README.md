@@ -85,7 +85,7 @@ get_NPS_parks <- function(key, states = NULL){
     url <- paste0("https://developer.nps.gov/api/v1/parks?api_key=",
                   key,
                   "&stateCode=",
-                  paste(states, collapse = ","),
+                  paste(states, collapse = ","), #combine states into string
                   "&limit=10000")
   }
 
@@ -109,8 +109,8 @@ parks related to the input activities.
 
 ``` r
 get_NPS_activities <- function(key, activities){
-  acts <- paste(activities, collapse = ",")
-  acts <- sub(" ", "%20", acts)
+  acts <- paste(activities, collapse = ",") #combine activities into string
+  acts <- sub(" ", "%20", acts) #remove spaces
   
   url <- paste0("https://developer.nps.gov/api/v1/activities/parks?api_key=",
                 key,
@@ -121,6 +121,7 @@ get_NPS_activities <- function(key, activities){
   query <- GET(url)
   results <- fromJSON(rawToChar(query$content))$data$parks
   
+  #add column for activity
   activity <- c()
   for (i in 1:length(activities)){
     y <- rep(activities[i],
@@ -146,20 +147,26 @@ NPS_activities <- fromJSON(rawToChar(get_activities$content))$data$name
 NPS_activities
 ```
 
-    ##  [1] "Arts and Culture"      "Astronomy"             "Auto and ATV"         
-    ##  [4] "Biking"                "Boating"               "Camping"              
-    ##  [7] "Canyoneering"          "Caving"                "Climbing"             
-    ## [10] "Compass and GPS"       "Dog Sledding"          "Fishing"              
-    ## [13] "Flying"                "Food"                  "Golfing"              
-    ## [16] "Guided Tours"          "Hands-On"              "Hiking"               
-    ## [19] "Horse Trekking"        "Hunting and Gathering" "Ice Skating"          
-    ## [22] "Junior Ranger Program" "Living History"        "Museum Exhibits"      
-    ## [25] "Paddling"              "Park Film"             "Playground"           
-    ## [28] "SCUBA Diving"          "Shopping"              "Skiing"               
-    ## [31] "Snorkeling"            "Snow Play"             "Snowmobiling"         
-    ## [34] "Snowshoeing"           "Surfing"               "Swimming"             
-    ## [37] "Team Sports"           "Tubing"                "Water Skiing"         
-    ## [40] "Wildlife Watching"
+    ##  [1] "Arts and Culture"      "Astronomy"            
+    ##  [3] "Auto and ATV"          "Biking"               
+    ##  [5] "Boating"               "Camping"              
+    ##  [7] "Canyoneering"          "Caving"               
+    ##  [9] "Climbing"              "Compass and GPS"      
+    ## [11] "Dog Sledding"          "Fishing"              
+    ## [13] "Flying"                "Food"                 
+    ## [15] "Golfing"               "Guided Tours"         
+    ## [17] "Hands-On"              "Hiking"               
+    ## [19] "Horse Trekking"        "Hunting and Gathering"
+    ## [21] "Ice Skating"           "Junior Ranger Program"
+    ## [23] "Living History"        "Museum Exhibits"      
+    ## [25] "Paddling"              "Park Film"            
+    ## [27] "Playground"            "SCUBA Diving"         
+    ## [29] "Shopping"              "Skiing"               
+    ## [31] "Snorkeling"            "Snow Play"            
+    ## [33] "Snowmobiling"          "Snowshoeing"          
+    ## [35] "Surfing"               "Swimming"             
+    ## [37] "Team Sports"           "Tubing"               
+    ## [39] "Water Skiing"          "Wildlife Watching"
 
 ## get_NPS_campgrounds
 
@@ -203,14 +210,17 @@ get_NPS_campgrounds <- function(key, park_codes = NULL){
     url <- paste0("https://developer.nps.gov/api/v1/campgrounds?api_key=",
                   key,
                   "&parkCode=",
-                  paste(park_codes, collapse = ","),
+                  paste(park_codes, collapse = ","), #combine park code into string
                   "&limit=10000")
   }
   
   query <- GET(url)
+  
+  #add columns for park name and park code
   camps <- fromJSON(rawToChar(query$content))$data |>
     select(name, parkCode) |>
     left_join(parks, by = "parkCode")
+  
   results <- cbind(camps, fromJSON(rawToChar(GET(url)$content))$data$amenities)|>
     as_tibble()
   
@@ -230,7 +240,7 @@ get_NPS_fees <- function(key, park_codes){
   url <- paste0("https://developer.nps.gov/api/v1/feespasses?api_key=",
                 key,
                 "&parkCode=",
-                paste(park_codes, collapse = ","),
+                paste(park_codes, collapse = ","), #combine park code into string
                 "&limit=10000")
   query <- GET(url)
   results <- fromJSON(rawToChar(query$content))$data$fees |>
@@ -242,6 +252,7 @@ get_NPS_fees <- function(key, park_codes){
       mutate(cost = as.numeric(cost))
   }
   
+  #stop if empty list is returned
   else{
     stop(message = "No fees!")
   }
@@ -265,22 +276,22 @@ NC_parks
 ```
 
     ## # A tibble: 12 × 6
-    ##    fullName                                parkC…¹ states desig…² latit…³ longi…⁴
-    ##    <chr>                                   <chr>   <chr>  <chr>     <dbl>   <dbl>
-    ##  1 Appalachian National Scenic Trail       appa    CT,GA… Nation…    40.4   -76.4
-    ##  2 Blue Ridge Parkway                      blri    NC,VA  Parkway    35.6   -82.5
-    ##  3 Cape Hatteras National Seashore         caha    NC     Nation…    35.4   -75.7
-    ##  4 Cape Lookout National Seashore          calo    NC     Nation…    34.8   -76.3
-    ##  5 Carl Sandburg Home National Historic S… carl    NC     Nation…    35.3   -82.5
-    ##  6 Fort Raleigh National Historic Site     fora    NC     Nation…    35.9   -75.7
-    ##  7 Great Smoky Mountains National Park     grsm    NC,TN  Nation…    35.6   -83.5
-    ##  8 Guilford Courthouse National Military … guco    NC     Nation…    36.1   -79.8
-    ##  9 Moores Creek National Battlefield       mocr    NC     Nation…    34.5   -78.1
-    ## 10 Overmountain Victory National Historic… ovvi    NC,SC… Nation…    35.1   -81.4
-    ## 11 Trail Of Tears National Historic Trail  trte    AL,AR… Nation…    36.1   -89.7
-    ## 12 Wright Brothers National Memorial       wrbr    NC     Nation…    36.0   -75.7
-    ## # … with abbreviated variable names ¹​parkCode, ²​designation, ³​latitude,
-    ## #   ⁴​longitude
+    ##    fullName           parkC…¹ states desig…² latit…³ longi…⁴
+    ##    <chr>              <chr>   <chr>  <chr>     <dbl>   <dbl>
+    ##  1 Appalachian Natio… appa    CT,GA… Nation…    40.4   -76.4
+    ##  2 Blue Ridge Parkway blri    NC,VA  Parkway    35.6   -82.5
+    ##  3 Cape Hatteras Nat… caha    NC     Nation…    35.4   -75.7
+    ##  4 Cape Lookout Nati… calo    NC     Nation…    34.8   -76.3
+    ##  5 Carl Sandburg Hom… carl    NC     Nation…    35.3   -82.5
+    ##  6 Fort Raleigh Nati… fora    NC     Nation…    35.9   -75.7
+    ##  7 Great Smoky Mount… grsm    NC,TN  Nation…    35.6   -83.5
+    ##  8 Guilford Courthou… guco    NC     Nation…    36.1   -79.8
+    ##  9 Moores Creek Nati… mocr    NC     Nation…    34.5   -78.1
+    ## 10 Overmountain Vict… ovvi    NC,SC… Nation…    35.1   -81.4
+    ## 11 Trail Of Tears Na… trte    AL,AR… Nation…    36.1   -89.7
+    ## 12 Wright Brothers N… wrbr    NC     Nation…    36.0   -75.7
+    ## # … with abbreviated variable names ¹​parkCode,
+    ## #   ²​designation, ³​latitude, ⁴​longitude
 
 ### Which designation categories are represented by North Carolina’s NPS units?
 
@@ -332,7 +343,7 @@ ggplot(NC_map) +
   theme(plot.title = element_text(hjust = 0.5, size = 20))
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
 
 ## National Designation Statistics
 
@@ -346,20 +357,20 @@ all_parks
 ```
 
     ## # A tibble: 471 × 6
-    ##    fullName                                parkC…¹ states desig…² latit…³ longi…⁴
-    ##    <chr>                                   <chr>   <chr>  <chr>     <dbl>   <dbl>
-    ##  1 Abraham Lincoln Birthplace National Hi… abli    KY     "Natio…    37.6   -85.7
-    ##  2 Acadia National Park                    acad    ME     "Natio…    44.4   -68.2
-    ##  3 Adams National Historical Park          adam    MA     "Natio…    42.3   -71.0
-    ##  4 African American Civil War Memorial     afam    DC     ""         38.9   -77.0
-    ##  5 African Burial Ground National Monument afbg    NY     "Natio…    40.7   -74.0
-    ##  6 Agate Fossil Beds National Monument     agfo    NE     "Natio…    42.4  -104. 
-    ##  7 Ala Kahakai National Historic Trail     alka    HI     "Natio…    19.1  -156. 
-    ##  8 Alagnak Wild River                      alag    AK     "Wild …    59.1  -156. 
-    ##  9 Alaska Public Lands                     anch    AK     ""         61.2  -150. 
-    ## 10 Alcatraz Island                         alca    CA     ""         37.8  -122. 
-    ## # … with 461 more rows, and abbreviated variable names ¹​parkCode, ²​designation,
-    ## #   ³​latitude, ⁴​longitude
+    ##    fullName           parkC…¹ states desig…² latit…³ longi…⁴
+    ##    <chr>              <chr>   <chr>  <chr>     <dbl>   <dbl>
+    ##  1 Abraham Lincoln B… abli    KY     "Natio…    37.6   -85.7
+    ##  2 Acadia National P… acad    ME     "Natio…    44.4   -68.2
+    ##  3 Adams National Hi… adam    MA     "Natio…    42.3   -71.0
+    ##  4 African American … afam    DC     ""         38.9   -77.0
+    ##  5 African Burial Gr… afbg    NY     "Natio…    40.7   -74.0
+    ##  6 Agate Fossil Beds… agfo    NE     "Natio…    42.4  -104. 
+    ##  7 Ala Kahakai Natio… alka    HI     "Natio…    19.1  -156. 
+    ##  8 Alagnak Wild River alag    AK     "Wild …    59.1  -156. 
+    ##  9 Alaska Public Lan… anch    AK     ""         61.2  -150. 
+    ## 10 Alcatraz Island    alca    CA     ""         37.8  -122. 
+    ## # … with 461 more rows, and abbreviated variable names
+    ## #   ¹​parkCode, ²​designation, ³​latitude, ⁴​longitude
 
 ### Nationally, which NPS designation categories have the most units?
 
@@ -371,7 +382,7 @@ below.
 ``` r
 all_des <- all_parks |>
   group_by(designation) |>
-  filter(!designation == "") |>
+  filter(!designation == "") |> #remove blank values
   summarise(count = n()) |>
   arrange(desc(count))
 
@@ -405,7 +416,7 @@ ggplot(data = all_des_5, aes(x = reorder(designation, count))) +
   coord_flip()
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
 
 ### Which states have the most National Monuments?
 
@@ -418,11 +429,11 @@ monuments, and is followed by New Mexico with 9 monuments.
 ``` r
 all_parks |>
   filter(designation == "National Monument") |>
-  separate_rows(states) |>
+  separate_rows(states) |> #separate lists of states into individual rows
   group_by(states) |>
   summarise(count = n()) |>
   arrange(desc(count)) |>
-  slice(1:10)
+  slice(1:10) #show top 10
 ```
 
     ## # A tibble: 10 × 2
@@ -450,19 +461,20 @@ climb_swim
 ```
 
     ## # A tibble: 91 × 4
-    ##    fullName                                         parkCode states activity
-    ##    <chr>                                            <chr>    <chr>  <chr>   
-    ##  1 Acadia National Park                             acad     ME     Climbing
-    ##  2 Aniakchak National Monument & Preserve           ania     AK     Climbing
-    ##  3 Arches National Park                             arch     UT     Climbing
-    ##  4 Big South Fork National River & Recreation Area  biso     KY,TN  Climbing
-    ##  5 Black Canyon Of The Gunnison National Park       blca     CO     Climbing
-    ##  6 Canyonlands National Park                        cany     UT     Climbing
-    ##  7 Capitol Reef National Park                       care     UT     Climbing
-    ##  8 Catoctin Mountain Park                           cato     MD     Climbing
-    ##  9 Chickamauga & Chattanooga National Military Park chch     GA,TN  Climbing
-    ## 10 City Of Rocks National Reserve                   ciro     ID     Climbing
-    ## # … with 81 more rows
+    ##    fullName                           parkC…¹ states activ…²
+    ##    <chr>                              <chr>   <chr>  <chr>  
+    ##  1 Acadia National Park               acad    ME     Climbi…
+    ##  2 Aniakchak National Monument & Pre… ania    AK     Climbi…
+    ##  3 Arches National Park               arch    UT     Climbi…
+    ##  4 Big South Fork National River & R… biso    KY,TN  Climbi…
+    ##  5 Black Canyon Of The Gunnison Nati… blca    CO     Climbi…
+    ##  6 Canyonlands National Park          cany    UT     Climbi…
+    ##  7 Capitol Reef National Park         care    UT     Climbi…
+    ##  8 Catoctin Mountain Park             cato    MD     Climbi…
+    ##  9 Chickamauga & Chattanooga Nationa… chch    GA,TN  Climbi…
+    ## 10 City Of Rocks National Reserve     ciro    ID     Climbi…
+    ## # … with 81 more rows, and abbreviated variable names
+    ## #   ¹​parkCode, ²​activity
 
 ### How many parks have climbing, and how many parks have swimming?
 
@@ -493,7 +505,7 @@ parks for climbing!
 
 ``` r
 climb_swim_states <- climb_swim |>
-  separate_rows(states, sep = ",")
+  separate_rows(states, sep = ",") #separate lists of states into individual rows
 
 ggplot(data = climb_swim_states, aes(x = states)) + 
   geom_bar(aes(fill = activity)) +
@@ -503,7 +515,7 @@ ggplot(data = climb_swim_states, aes(x = states)) +
   labs(title = "NPS Parks with Climbing and/or Swimming by State")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
 
 ### Which NPS parks have BOTH climbing and swimming recorded as possible activities?
 
@@ -512,7 +524,7 @@ Only nine parks have both climbing and swimming!
 ``` r
 climb_and_swim <- climb_swim |>
   group_by(fullName) |>
-  filter(n() > 1) |>
+  filter(n() > 1) |> #subset by parks that appear twice (climbing and swimming)
   select(-activity) |>
   distinct(fullName, states)
 
@@ -541,7 +553,7 @@ available.
 
 ``` r
 get_NPS_codes(my_key) |>
-  filter(str_detect(fullName, "Great Smoky"))
+  filter(str_detect(fullName, "Great Smoky")) #get park code
 ```
 
     ## # A tibble: 1 × 3
@@ -616,7 +628,7 @@ ggplot(my_camps_heat, aes(x = name, y = var, fill = value)) +
 Great Smoky Mountains National Park")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-21-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-20-1.png)<!-- -->
 
 ## Entrance Fees
 
@@ -626,7 +638,7 @@ Finally, let’s use the `get_NPS_fees` to pull entrance fees for grsm.
 Good news…no fees!
 
 ``` r
-get_NPS_fees(my_key, "grsm")
+get_NPS_fees(my_key, "grsm") 
 ```
 
     ## Error in get_NPS_fees(my_key, "grsm"): No fees!
@@ -637,7 +649,7 @@ Let’s try finding fees for Yosemite National Park.
 
 ``` r
 get_NPS_codes(my_key) |>
-  filter(str_detect(fullName, "Yosemite"))
+  filter(str_detect(fullName, "Yosemite")) #get park code
 ```
 
     ## # A tibble: 1 × 3
@@ -649,7 +661,7 @@ It looks like Yosemite has entrance fees for all visitors with the
 exception of Education/Academic Groups.
 
 ``` r
-get_NPS_fees(my_key, "yose")
+get_NPS_fees(my_key, "yose") 
 ```
 
     ##                         entranceFeeType cost
@@ -709,4 +721,4 @@ ggplot(data = fees, aes(x = entranceFeeType, y = cost)) +
   labs(title = "NPS Fees by Type of Entrance")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-27-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-26-1.png)<!-- -->
